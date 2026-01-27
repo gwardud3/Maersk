@@ -60,7 +60,7 @@ def load_zip_centroids():
     # Normalize column names
     df.columns = df.columns.str.strip().str.lower()
 
-    required_cols = {"zip", "lat", "long"}
+    required_cols = {"zip", "city", "state", "lat", "long"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
             f"ZIP centroid file must contain columns: {required_cols}"
@@ -132,16 +132,16 @@ def warehouse_map_app():
                     ),
                     axis=1
                 )
-
+                nearest = warehouses.nsmallest(2, "distance_miles")
                 result_df = (
-                    nearest[["name", "distance_miles"]]
+                    nearest[["warehouse", "distance_miles"]]
                     .assign(distance_miles=lambda d: d["distance_miles"].round(1))
                     .rename(columns={
                         "name": "Warehouse",
                         "distance_miles": "Distance (miles)"
                     })
                     .reset_index(drop=True)
-                ))
+                )
 
                 st.dataframe(result_df)
     # ---------------- Plot ----------------
