@@ -67,6 +67,10 @@ def process_data(origin_list, customer_name):
 
     zip3_plot_colors = zip3_shapes["Zone"].map(zone_colors).fillna("#CCCCCC")
     zip3_shapes.plot(color=zip3_plot_colors, ax=ax, linewidth=0)
+    # Set map extent to continental US
+    ax.set_xlim(-130, -65)   # Longitude range
+    ax.set_ylim(24, 50)      # Latitude range
+    ax.set_aspect('equal', adjustable='box')
     used_zones = sorted(zip3_shapes["Zone"].dropna().unique())
     legend_handles = [mpatches.Patch(color=zone_colors[z], label=str(z)) for z in used_zones]
     ax.legend(handles=legend_handles, title="Zone", loc="lower left", fontsize="small")
@@ -106,4 +110,5 @@ if st.button("Generate Map"):
             data=csv,
             file_name="expanded_zone_data.csv",
             mime="text/csv"
+
         )
