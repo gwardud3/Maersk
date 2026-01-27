@@ -66,7 +66,7 @@ def warehouse_map_app():
         ax.text(
             row.geometry.x,
             row.geometry.y,
-            row["Name"],
+            row["Warehouse"],
             fontsize=8,
             ha="left",
             va="bottom"
