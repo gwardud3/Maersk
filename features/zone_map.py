@@ -13,11 +13,12 @@ def resource_path(relative_path: str) -> str:
         relative_path
     )
 
-# ---------------- Cached ZIP3 shapes ----------------
+# ---------------- Cached ZIP3 shapes (GPKG) ----------------
 @st.cache_resource
 def load_zip3_shapes():
-    gdf = gpd.read_parquet(
-        resource_path("shapefiles/zip3_simplified.parquet")
+    gdf = gpd.read_file(
+        resource_path("shapefiles/zip3_simplified.gpkg"),
+        engine="fiona"  # more stable on Streamlit Cloud
     )
     gdf["zip3"] = gdf["zip3"].astype(str).str.zfill(3)
     return gdf
@@ -79,9 +80,10 @@ def process_data(origin_list, customer_name):
 
     fig, ax = plt.subplots(figsize=(15, 10))
 
-    # Optional state boundaries
+    # State boundaries (lightweight, OK to reload)
     states = gpd.read_file(
-        resource_path("shapefiles/states_preprocessed.gpkg")
+        resource_path("shapefiles/states_preprocessed.gpkg"),
+        engine="fiona"
     )
     states.boundary.plot(ax=ax, linewidth=0.5, edgecolor="black")
 
@@ -90,7 +92,7 @@ def process_data(origin_list, customer_name):
     zip3_plot_colors = zip3_shapes["Zone"].map(zone_colors).fillna("#CCCCCC")
     zip3_shapes.plot(ax=ax, color=zip3_plot_colors, linewidth=0)
 
-    # Focus on continental US
+    # Continental US view
     ax.set_xlim(-130, -65)
     ax.set_ylim(24, 50)
     ax.set_aspect("equal", adjustable="box")
@@ -152,3 +154,4 @@ def zone_map_app():
             file_name="expanded_zone_data.csv",
             mime="text/csv"
         )
+
