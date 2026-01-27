@@ -15,10 +15,10 @@ def resource_path(relative_path: str) -> str:
 # ---------------- Load warehouses ----------------
 @st.cache_data
 def load_warehouses():
-    df = pd.read_excel(resource_path("Warehouses.xlsx"))
+    df = pd.read_excel(resource_path("MaerskWarehouses.xlsx"))
 
     # Basic validation
-    required_cols = {"Name", "Lat", "Long"}
+    required_cols = {"Warehouse", "Lat", "Long"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
             f"Excel file must contain columns: {required_cols}"
