@@ -73,8 +73,13 @@ def load_zip_centroids():
 def warehouse_map_app():
     st.header("🏭 Warehouse Map")
 
-    zip_input = st.text_input(
-        "Enter a 5-digit ZIP code to find the nearest facilities"
+    zip_centroids = load_zip_centroids()
+
+    zip_input = st.selectbox(
+        "Enter a 5-digit ZIP code to find the nearest facilities",
+        options=zip_centroids["zip"].sort_values().tolist(),
+        index=None,
+        placeholder="Start typing a ZIP code..."
     )
 
     # Load data
