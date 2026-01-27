@@ -75,17 +75,24 @@ def warehouse_map_app():
 
     zip_centroids = load_zip_centroids()
 
-    zip_input = st.selectbox(
-        "Enter a 5-digit ZIP code to find the nearest facilities",
-        options=zip_centroids["zip"].sort_values().tolist(),
+    zip_centroids["zip_label"] = (
+        zip_centroids["zip"]
+        + " – "
+        + zip_centroids["city"].str.title()
+        + ", "
+        + zip_centroids["state"].str.upper()
+    )
+
+    zip_label = st.selectbox(
+        "Enter a ZIP code",
+        options=zip_centroids["zip_label"].sort_values().tolist(),
         index=None,
-        placeholder="Start typing a ZIP code..."
+        placeholder="Start typing ZIP, city, or state..."
     )
 
     # Load data
     try:
         warehouses = load_warehouses()
-        zip_centroids = load_zip_centroids()
     except Exception as e:
         st.error(f"Failed to load data: {e}")
         return
@@ -94,7 +101,10 @@ def warehouse_map_app():
 
     nearest = None
     zip_point = None
-
+    zip_input = None
+    if zip_label:
+        zip_input = zip_label.split(" – ")[0]
+    
     if zip_input:
         if not zip_input.isdigit() or len(zip_input) != 5:
             st.warning("Please enter a valid 5-digit ZIP code.")
@@ -123,8 +133,17 @@ def warehouse_map_app():
                     axis=1
                 )
 
-                nearest = warehouses.nsmallest(2, "distance_miles")
+                result_df = (
+                    nearest[["name", "distance_miles"]]
+                    .assign(distance_miles=lambda d: d["distance_miles"].round(1))
+                    .rename(columns={
+                        "name": "Warehouse",
+                        "distance_miles": "Distance (miles)"
+                    })
+                    .reset_index(drop=True)
+                ))
 
+                st.dataframe(result_df)
     # ---------------- Plot ----------------
     fig, ax = plt.subplots(figsize=(15, 10))
 
