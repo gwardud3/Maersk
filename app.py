@@ -1,7 +1,7 @@
 import streamlit as st
 
-from features.zone_map import zone_map_app
-from features.warehouse_map import warehouse_map_app
+from features.zone_map import zone_map
+from features.warehouse_map import warehouse_map
 
 st.set_page_config(
     page_title="Pricing Map Tools",
