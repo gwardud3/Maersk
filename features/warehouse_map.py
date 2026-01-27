@@ -38,7 +38,7 @@ def load_warehouses():
     # Normalize column names
     df.columns = df.columns.str.strip().str.lower()
 
-    required_cols = {"Warehouse", "lat", "long"}
+    required_cols = {"Warehouse", "Lat", "Long"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
             f"Warehouse file must contain columns: {required_cols}"
@@ -46,7 +46,7 @@ def load_warehouses():
 
     gdf = gpd.GeoDataFrame(
         df,
-        geometry=gpd.points_from_xy(df["long"], df["lat"]),
+        geometry=gpd.points_from_xy(df["Long"], df["Lat"]),
         crs="EPSG:4326"
     )
 
@@ -60,13 +60,13 @@ def load_zip_centroids():
     # Normalize column names
     df.columns = df.columns.str.strip().str.lower()
 
-    required_cols = {"zip", "lat", "long"}
+    required_cols = {"Zip", "Lat", "Long"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
             f"ZIP centroid file must contain columns: {required_cols}"
         )
 
-    df["zip"] = df["zip"].astype(str).str.zfill(5)
+    df["Zip"] = df["Zip"].astype(str).str.zfill(5)
     return df
 
 # ---------------- Streamlit Feature Entry Point ----------------
@@ -99,11 +99,11 @@ def warehouse_map_app():
             if zip_row.empty:
                 st.warning("ZIP code not found.")
             else:
-                zip_lat = zip_row.iloc[0]["lat"]
-                zip_lon = zip_row.iloc[0]["long"]
+                zip_lat = zip_row.iloc[0]["Lat"]
+                zip_lon = zip_row.iloc[0]["Long"]
 
                 zip_point = gpd.GeoDataFrame(
-                    {"zip": [zip_input]},
+                    {"Zip": [zip_input]},
                     geometry=gpd.points_from_xy([zip_lon], [zip_lat]),
                     crs="EPSG:4326"
                 )
