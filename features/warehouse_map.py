@@ -30,6 +30,28 @@ def haversine_miles(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
+# ---------------- Load warehouses ----------------
+@st.cache_data
+def load_warehouses():
+    df = pd.read_excel(resource_path("MaerskWarehouses.xlsx"))
+
+    # Normalize column names
+    df.columns = df.columns.str.strip().str.lower()
+
+    required_cols = {"Warehouse", "lat", "long"}
+    if not required_cols.issubset(df.columns):
+        raise ValueError(
+            f"Warehouse file must contain columns: {required_cols}"
+        )
+
+    gdf = gpd.GeoDataFrame(
+        df,
+        geometry=gpd.points_from_xy(df["long"], df["lat"]),
+        crs="EPSG:4326"
+    )
+
+    return gdf
+
 # ---------------- Load ZIP centroids ----------------
 @st.cache_data
 def load_zip_centroids():
@@ -40,7 +62,9 @@ def load_zip_centroids():
 
     required_cols = {"zip", "lat", "long"}
     if not required_cols.issubset(df.columns):
-        raise ValueError(f"ZIP centroid file must contain columns: {required_cols}")
+        raise ValueError(
+            f"ZIP centroid file must contain columns: {required_cols}"
+        )
 
     df["zip"] = df["zip"].astype(str).str.zfill(5)
     return df
@@ -49,55 +73,31 @@ def load_zip_centroids():
 def warehouse_map_app():
     st.header("🏭 Warehouse Map")
 
-    # --- Inputs ---
-    uploaded_file = st.file_uploader(
-        "Upload Warehouse Excel File",
-        type=["xlsx"]
-    )
-
     zip_input = st.text_input(
         "Enter a 5-digit ZIP code to find the nearest facilities"
     )
 
-    if uploaded_file is None:
-        st.info("Please upload an Excel file with Name, Lat, and Long columns.")
-        return
-
-    # --- Load Warehouses ---
+    # Load data
     try:
-        df = pd.read_excel(uploaded_file)
-
-        # Normalize column names
-        df.columns = df.columns.str.strip().str.lower()
-
-        required_cols = {"name", "lat", "long"}
-        if not required_cols.issubset(df.columns):
-            st.error(f"Warehouse file must contain columns: {required_cols}")
-            return
-
-        warehouses = gpd.GeoDataFrame(
-            df,
-            geometry=gpd.points_from_xy(df["long"], df["lat"]),
-            crs="EPSG:4326"
-        )
-
+        warehouses = load_warehouses()
+        zip_centroids = load_zip_centroids()
     except Exception as e:
-        st.error(f"Failed to load warehouse file: {e}")
+        st.error(f"Failed to load data: {e}")
         return
 
     st.caption(f"{len(warehouses)} warehouses loaded")
 
-    # --- Find nearest warehouses ---
     nearest = None
     zip_point = None
 
-    if zip_input and zip_input.isdigit() and len(zip_input) == 5:
-        try:
-            zip_centroids = load_zip_centroids()
+    if zip_input:
+        if not zip_input.isdigit() or len(zip_input) != 5:
+            st.warning("Please enter a valid 5-digit ZIP code.")
+        else:
             zip_row = zip_centroids[zip_centroids["zip"] == zip_input]
 
             if zip_row.empty:
-                st.warning("ZIP code not found in centroid file.")
+                st.warning("ZIP code not found.")
             else:
                 zip_lat = zip_row.iloc[0]["lat"]
                 zip_lon = zip_row.iloc[0]["long"]
@@ -120,14 +120,10 @@ def warehouse_map_app():
 
                 nearest = warehouses.nsmallest(2, "distance_miles")
 
-        except Exception as e:
-            st.error(f"Error calculating distances: {e}")
-            return
-
-    # --- Plot ---
+    # ---------------- Plot ----------------
     fig, ax = plt.subplots(figsize=(15, 10))
 
-    # State boundaries for context
+    # State boundaries
     states = gpd.read_file(
         resource_path("shapefiles/states_preprocessed.gpkg"),
         engine="fiona"
@@ -152,7 +148,7 @@ def warehouse_map_app():
             label="Nearest Warehouses"
         )
 
-    # Plot ZIP location
+    # Plot ZIP point
     if zip_point is not None:
         zip_point.plot(
             ax=ax,
@@ -162,7 +158,7 @@ def warehouse_map_app():
             label="Input ZIP"
         )
 
-    # US extent
+    # Continental US view
     ax.set_xlim(-130, -65)
     ax.set_ylim(24, 50)
     ax.set_aspect("equal", adjustable="box")
@@ -173,15 +169,16 @@ def warehouse_map_app():
 
     st.pyplot(fig)
 
-    # --- Results Table ---
+    # ---------------- Results Table ----------------
     if nearest is not None:
         st.subheader("📍 Closest Warehouses")
 
         result_df = (
-            nearest[["name", "distance_miles"]]
+            nearest[["Warehouse", "distance_miles"]]
             .assign(distance_miles=lambda d: d["distance_miles"].round(1))
             .rename(columns={"distance_miles": "Distance (miles)"})
             .reset_index(drop=True)
         )
 
         st.dataframe(result_df)
+
