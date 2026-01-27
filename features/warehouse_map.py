@@ -55,7 +55,7 @@ def load_warehouses():
 # ---------------- Load ZIP centroids ----------------
 @st.cache_data
 def load_zip_centroids():
-    df = pd.read_csv(resource_path("zip_centroids.csv"))
+    df = pd.read_csv(resource_path("centroids.csv"))
 
     # Normalize column names
     df.columns = df.columns.str.strip().str.lower()
