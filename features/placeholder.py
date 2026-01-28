@@ -1,7 +1,7 @@
 import streamlit as st
 
 def placeholder_app():
-    st.header("🏭 Warehouse Map")
+    st.header("🏭 Placeholder App")
 
     st.info("This feature is under construction.")
 
