@@ -2,7 +2,7 @@ import streamlit as st
 
 from features.zone_map import zone_map_app
 from features.warehouse_map import warehouse_map_app
-from features.placeholder import placeholder_app
+from features.placeholder import planner_dashboard_app
 
 st.set_page_config(
     page_title="Pricing Map Tools",
@@ -13,7 +13,7 @@ st.title("📊 Pricing & Network Mapping Tools")
 
 menu = st.sidebar.radio(
     "Select a Tool",
-    ["Zone Map", "Warehouse Map", "Placeholder"]
+    ["Zone Map", "Warehouse Map", "Planner Dashboard"]
 )
 
 if menu == "Zone Map":
@@ -22,5 +22,5 @@ if menu == "Zone Map":
 elif menu == "Warehouse Map":
     warehouse_map_app()
 
-elif menu == "Placeholder":
-    placeholder_app()
+elif menu == "Planner Dashboard":
+    planner_dashboard_app()
