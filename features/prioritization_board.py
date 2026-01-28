@@ -9,6 +9,45 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DATA_FILE = os.path.join(DATA_DIR, "prioritization_board.json")
 
+def import_from_excel(df):
+    cards = {"in_process": [], "complete": []}
+
+    required_cols = {
+        "Client", "Status", "Priority",
+        "Annual Revenue", "Annual Spend", "Notes"
+    }
+
+    if not required_cols.issubset(df.columns):
+        raise ValueError("Excel file does not match expected format.")
+
+    # ---- In Process ----
+    ip_df = df[df["Status"] == "In Process"].copy()
+
+    # Ensure proper ordering
+    ip_df["Priority"] = pd.to_numeric(ip_df["Priority"], errors="coerce")
+    ip_df = ip_df.sort_values("Priority")
+
+    for _, row in ip_df.iterrows():
+        cards["in_process"].append({
+            "client": str(row["Client"]),
+            "annual_rev": str(row["Annual Revenue"] or ""),
+            "annual_spend": str(row["Annual Spend"] or ""),
+            "notes": str(row["Notes"] or "")
+        })
+
+    # ---- Complete ----
+    done_df = df[df["Status"] == "Complete"]
+
+    for _, row in done_df.iterrows():
+        cards["complete"].append({
+            "client": str(row["Client"]),
+            "annual_rev": str(row["Annual Revenue"] or ""),
+            "annual_spend": str(row["Annual Spend"] or ""),
+            "notes": str(row["Notes"] or "")
+        })
+
+    return cards
+
 
 def empty_board():
     return {"in_process": [], "complete": []}
@@ -221,6 +260,31 @@ def prioritization_board_app():
                 st.success(f"Added '{name}' to In Process")
 
     st.divider()
+
+    st.divider()
+st.subheader("Import / Restore Board")
+
+uploaded_file = st.file_uploader(
+    "Upload previously exported Excel file",
+    type=["xlsx"]
+)
+
+if uploaded_file:
+    try:
+        df_import = pd.read_excel(uploaded_file)
+
+        if st.button("Restore Board from Excel"):
+            imported_cards = import_from_excel(df_import)
+
+            st.session_state.cards = imported_cards
+            save_board(st.session_state.cards)
+
+            st.success("Board successfully restored from Excel.")
+            st.rerun()
+
+    except Exception as e:
+        st.error(f"Failed to import file: {e}")
+
 
     # ===================== EXPORT =====================
     rows = []
