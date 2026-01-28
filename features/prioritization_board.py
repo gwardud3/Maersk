@@ -53,10 +53,14 @@ def prioritization_board_app():
     st.header("🗂️ Prioritization Board")
 
     # ---------------- Initialize state ----------------
-    if "cards" not in st.session_state:
-        loaded = load_board()
-        st.session_state.cards = normalize_board(loaded)
-        save_board(st.session_state.cards)
+    loaded = load_board()
+
+    # Always normalize (handles legacy session_state + file)
+    normalized = normalize_board(loaded)
+
+    st.session_state.cards = normalized
+    save_board(st.session_state.cards)
+
 
     cards_ip = st.session_state.cards["in_process"]
     cards_done = st.session_state.cards["complete"]
