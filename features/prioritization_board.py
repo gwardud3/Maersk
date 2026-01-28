@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import io
-from streamlit_sortables import sortable_items
 
 # ---------------- Feature Entry Point ----------------
 def prioritization_board_app():
@@ -22,10 +21,14 @@ def prioritization_board_app():
         section = st.selectbox("Section", ["In Process", "Complete"])
         submitted = st.form_submit_button("Add")
 
-        if submitted and client_name.strip():
-            key = "in_process" if section == "In Process" else "complete"
-            st.session_state.cards[key].append(client_name.strip())
-            st.success(f"Added '{client_name}' to {section}")
+        if submitted:
+            name = client_name.strip()
+            if not name:
+                st.warning("Client name cannot be empty.")
+            else:
+                key = "in_process" if section == "In Process" else "complete"
+                st.session_state.cards[key].append(name)
+                st.success(f"Added '{name}' to {section}")
 
     st.divider()
 
@@ -34,51 +37,80 @@ def prioritization_board_app():
 
     # ================= IN PROCESS =================
     with col1:
-        st.subheader("🔄 In Process (Drag to Reorder)")
+        st.subheader("🔄 In Process (Priority Order)")
 
-        if not st.session_state.cards["in_process"]:
+        cards = st.session_state.cards["in_process"]
+
+        if not cards:
             st.caption("No cards in process")
         else:
-            # Drag-and-drop sortable list
-            new_order = sortable_items(
-                st.session_state.cards["in_process"],
-                direction="vertical",
-                key="in_process_sortable"
-            )
+            for idx, client in enumerate(cards):
+                priority = idx + 1
 
-            # Persist new order
-            st.session_state.cards["in_process"] = new_order
+                c1, c2, c3, c4, c5 = st.columns([4, 1, 1, 1, 1])
 
-            # Display with priority + remove buttons
-            for idx, client in enumerate(new_order, start=1):
-                c1, c2 = st.columns([6, 1])
                 with c1:
-                    st.markdown(f"**{idx}. {client}**")
+                    st.markdown(f"**{priority}. {client}**")
+
+                # Move Up
                 with c2:
+                    if idx > 0:
+                        if st.button("⬆️", key=f"up_{idx}"):
+                            cards[idx - 1], cards[idx] = cards[idx], cards[idx - 1]
+                            st.rerun()
+
+                # Move Down
+                with c3:
+                    if idx < len(cards) - 1:
+                        if st.button("⬇️", key=f"down_{idx}"):
+                            cards[idx + 1], cards[idx] = cards[idx], cards[idx + 1]
+                            st.rerun()
+
+                # Move to Complete
+                with c4:
+                    if st.button("✅", key=f"to_done_{idx}"):
+                        st.session_state.cards["complete"].append(client)
+                        cards.pop(idx)
+                        st.rerun()
+
+                # Remove
+                with c5:
                     if st.button("❌", key=f"remove_ip_{idx}"):
-                        st.session_state.cards["in_process"].remove(client)
+                        cards.pop(idx)
                         st.rerun()
 
     # ================= COMPLETE =================
     with col2:
         st.subheader("✅ Complete")
 
-        if not st.session_state.cards["complete"]:
+        done_cards = st.session_state.cards["complete"]
+
+        if not done_cards:
             st.caption("No completed cards")
         else:
-            for idx, client in enumerate(st.session_state.cards["complete"]):
-                c1, c2 = st.columns([6, 1])
+            for idx, client in enumerate(done_cards):
+                c1, c2, c3 = st.columns([5, 1, 1])
+
                 with c1:
                     st.markdown(f"**{client}**")
+
+                # Move back to In Process (bottom priority)
                 with c2:
+                    if st.button("🔄", key=f"to_ip_{idx}"):
+                        st.session_state.cards["in_process"].append(client)
+                        done_cards.pop(idx)
+                        st.rerun()
+
+                # Remove
+                with c3:
                     if st.button("❌", key=f"remove_done_{idx}"):
-                        st.session_state.cards["complete"].pop(idx)
+                        done_cards.pop(idx)
                         st.rerun()
 
     st.divider()
 
     # ---------------- Export to Excel ----------------
-    st.subheader("📤 Export Board")
+    st.subheader("📤 Export Board to Excel")
 
     rows = []
 
@@ -108,4 +140,3 @@ def prioritization_board_app():
         file_name="prioritization_board.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
