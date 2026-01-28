@@ -12,7 +12,7 @@ st.title("📊 Pricing & Network Mapping Tools")
 
 menu = st.sidebar.radio(
     "Select a Tool",
-    ["Zone Map", "Warehouse Map"]
+    ["Zone Map", "Warehouse Map", "Placeholder"]
 )
 
 if menu == "Zone Map":
@@ -20,3 +20,6 @@ if menu == "Zone Map":
 
 elif menu == "Warehouse Map":
     warehouse_map_app()
+
+elif menu == "Placeholder":
+    Placeholder_app()
