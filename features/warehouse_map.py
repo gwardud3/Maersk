@@ -133,6 +133,8 @@ def warehouse_map_app():
                     ),
                     axis=1
                 )
+                nearest = warehouses.nsmallest(2, "distance_miles")
+                
                 # Build distance lines (ZIP → warehouse)
                 lines = []
                 for _, row in nearest.iterrows():
@@ -184,13 +186,13 @@ def warehouse_map_app():
             label="Input ZIP"
         )
     if nearest is not None:
-    distance_lines.plot(
-        ax=ax,
-        color="blue",
-        linewidth=2,
-        linestyle="--",
-        alpha=0.8
-    )
+        distance_lines.plot(
+            ax=ax,
+            color="blue",
+            linewidth=2,
+            linestyle="--",
+            alpha=0.8
+        )
 
     # Continental US view
     ax.set_xlim(-130, -65)
