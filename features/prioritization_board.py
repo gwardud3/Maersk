@@ -5,8 +5,10 @@ import json
 import os
 
 # ===================== Persistence =====================
-DATA_DIR = "data"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 DATA_FILE = os.path.join(DATA_DIR, "prioritization_board.json")
+
 
 def empty_board():
     return {"in_process": [], "complete": []}
@@ -95,7 +97,8 @@ def prioritization_board_app():
                                 card["notes"],
                                 key=f"notes_ip_{idx}"
                             )
-                            save_board(st.session_state.cards)
+                            if "cards" not in st.session_state:
+                                st.session_state.cards = normalize_board(load_board())
 
                     # -------- Actions --------
                     with right:
