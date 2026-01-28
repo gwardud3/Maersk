@@ -22,4 +22,4 @@ elif menu == "Warehouse Map":
     warehouse_map_app()
 
 elif menu == "Placeholder":
-    Placeholder_app()
+    placeholder_app()
