@@ -21,5 +21,5 @@ def daily_meme_app():
     st.image(
         image,
         caption=image_name,
-        use_container_width=True
+        width=600
     )
