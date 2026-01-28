@@ -48,7 +48,7 @@ def save_board(cards):
 def prioritization_board_app():
     st.header("Prioritization Board")
 
-    # Always load & normalize (handles legacy session state)
+    # Always load & normalize
     st.session_state.cards = normalize_board(load_board())
     save_board(st.session_state.cards)
 
@@ -70,6 +70,7 @@ def prioritization_board_app():
                 with st.container(border=True):
                     left, right = st.columns([6, 1])
 
+                    # -------- Client & Details --------
                     with left:
                         with st.expander(f"{priority}. {card['client']}"):
                             card["annual_rev"] = st.text_input(
@@ -89,18 +90,25 @@ def prioritization_board_app():
                             )
                             save_board(st.session_state.cards)
 
+                    # -------- Actions --------
                     with right:
-                        with st.popover("Actions"):
+                        with st.popover("⋮"):
+                            new_pos = st.number_input(
+                                "Set position",
+                                min_value=1,
+                                max_value=len(cards_ip),
+                                value=priority,
+                                step=1,
+                                key=f"pos_ip_{idx}"
+                            )
 
-                            if idx > 0 and st.button("Move up", key=f"up_{idx}"):
-                                cards_ip[idx - 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx - 1]
+                            if st.button("Apply", key=f"apply_pos_{idx}"):
+                                cards_ip.pop(idx)
+                                cards_ip.insert(new_pos - 1, card)
                                 save_board(st.session_state.cards)
                                 st.rerun()
 
-                            if idx < len(cards_ip) - 1 and st.button("Move down", key=f"down_{idx}"):
-                                cards_ip[idx + 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx + 1]
-                                save_board(st.session_state.cards)
-                                st.rerun()
+                            st.divider()
 
                             if st.button("Mark complete", key=f"complete_{idx}"):
                                 cards_done.append(card)
@@ -144,8 +152,7 @@ def prioritization_board_app():
                             save_board(st.session_state.cards)
 
                     with right:
-                        with st.popover("Actions"):
-
+                        with st.popover("⋮"):
                             if st.button("Move back to In Process", key=f"back_{idx}"):
                                 cards_ip.append(card)
                                 cards_done.pop(idx)
@@ -240,4 +247,3 @@ def prioritization_board_app():
         file_name="prioritization_board.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
