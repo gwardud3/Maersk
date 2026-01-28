@@ -48,9 +48,8 @@ def save_board(cards):
 def prioritization_board_app():
     st.header("Prioritization Board")
 
-    # Always load + normalize (handles legacy session state)
-    loaded = load_board()
-    st.session_state.cards = normalize_board(loaded)
+    # Always load & normalize (handles legacy session state)
+    st.session_state.cards = normalize_board(load_board())
     save_board(st.session_state.cards)
 
     cards_ip = st.session_state.cards["in_process"]
@@ -91,24 +90,25 @@ def prioritization_board_app():
                             save_board(st.session_state.cards)
 
                     with right:
-                        with st.popover("Actions"):
-                            if idx > 0 and st.button("Move up"):
+                        with st.popover("", key=f"actions_ip_{idx}"):
+
+                            if idx > 0 and st.button("Move up", key=f"up_{idx}"):
                                 cards_ip[idx - 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx - 1]
                                 save_board(st.session_state.cards)
                                 st.rerun()
 
-                            if idx < len(cards_ip) - 1 and st.button("Move down"):
+                            if idx < len(cards_ip) - 1 and st.button("Move down", key=f"down_{idx}"):
                                 cards_ip[idx + 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx + 1]
                                 save_board(st.session_state.cards)
                                 st.rerun()
 
-                            if st.button("Mark complete"):
+                            if st.button("Mark complete", key=f"complete_{idx}"):
                                 cards_done.append(card)
                                 cards_ip.pop(idx)
                                 save_board(st.session_state.cards)
                                 st.rerun()
 
-                            if st.button("Delete"):
+                            if st.button("Delete", key=f"delete_ip_{idx}"):
                                 cards_ip.pop(idx)
                                 save_board(st.session_state.cards)
                                 st.rerun()
@@ -144,14 +144,15 @@ def prioritization_board_app():
                             save_board(st.session_state.cards)
 
                     with right:
-                        with st.popover("Actions"):
-                            if st.button("Move back to In Process"):
+                        with st.popover("Actions", key=f"actions_done_{idx}"):
+
+                            if st.button("Move back to In Process", key=f"back_{idx}"):
                                 cards_ip.append(card)
                                 cards_done.pop(idx)
                                 save_board(st.session_state.cards)
                                 st.rerun()
 
-                            if st.button("Delete"):
+                            if st.button("Delete", key=f"delete_done_{idx}"):
                                 cards_done.pop(idx)
                                 save_board(st.session_state.cards)
                                 st.rerun()
@@ -239,3 +240,4 @@ def prioritization_board_app():
         file_name="prioritization_board.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
