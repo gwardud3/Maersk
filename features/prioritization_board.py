@@ -68,7 +68,14 @@ def prioritization_board_app():
                 priority = idx + 1
 
                 with st.container(border=True):
-                    left, right = st.columns([6, 1])
+                    pcol, left, right = st.columns([1, 5, 1])
+
+                    # ---- Priority number (always visible) ----
+                    with pcol:
+                        st.markdown(
+                            f"<div style='font-size:22px; font-weight:700; text-align:center;'>{priority}</div>",
+                            unsafe_allow_html=True
+                        )
 
                     # -------- Client & Details --------
                     with left:
