@@ -4,7 +4,7 @@ import io
 import json
 import os
 
-# ---------------- Persistence ----------------
+# ===================== Persistence =====================
 DATA_DIR = "data"
 DATA_FILE = os.path.join(DATA_DIR, "prioritization_board.json")
 
@@ -22,7 +22,6 @@ def new_card(name):
 def load_board():
     if not os.path.exists(DATA_FILE):
         return empty_board()
-
     try:
         with open(DATA_FILE, "r") as f:
             return json.load(f)
@@ -30,9 +29,6 @@ def load_board():
         return empty_board()
 
 def normalize_board(cards):
-    """
-    Migrate legacy string-based cards to dict-based cards.
-    """
     for section in ["in_process", "complete"]:
         normalized = []
         for item in cards.get(section, []):
@@ -48,40 +44,35 @@ def save_board(cards):
     with open(DATA_FILE, "w") as f:
         json.dump(cards, f, indent=2)
 
-# ---------------- Feature Entry Point ----------------
+# ===================== Feature =====================
 def prioritization_board_app():
-    st.header("🗂️ Prioritization Board")
+    st.header("Prioritization Board")
 
-    # ---------------- Initialize state ----------------
+    # Always load + normalize (handles legacy session state)
     loaded = load_board()
-
-    # Always normalize (handles legacy session_state + file)
-    normalized = normalize_board(loaded)
-
-    st.session_state.cards = normalized
+    st.session_state.cards = normalize_board(loaded)
     save_board(st.session_state.cards)
-
 
     cards_ip = st.session_state.cards["in_process"]
     cards_done = st.session_state.cards["complete"]
 
     col1, col2 = st.columns(2)
 
-    # ================= IN PROCESS =================
+    # ===================== IN PROCESS =====================
     with col1:
-        st.subheader("🔄 In Process")
+        st.subheader("In Process")
 
         if not cards_ip:
-            st.caption("No cards in process")
+            st.caption("No items in process")
         else:
             for idx, card in enumerate(cards_ip):
                 priority = idx + 1
 
                 with st.container(border=True):
-                    c1, c2, c3, c4, c5 = st.columns([4, 1, 1, 1, 1])
+                    left, right = st.columns([6, 1])
 
-                    with c1:
-                        with st.expander(f"**{priority}. {card['client']}**"):
+                    with left:
+                        with st.expander(f"{priority}. {card['client']}"):
                             card["annual_rev"] = st.text_input(
                                 "Annual Revenue",
                                 card["annual_rev"],
@@ -99,43 +90,41 @@ def prioritization_board_app():
                             )
                             save_board(st.session_state.cards)
 
-                    with c2:
-                        if idx > 0 and st.button("⬆️", key=f"up_{idx}", use_container_width=True):
-                            cards_ip[idx - 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx - 1]
-                            save_board(st.session_state.cards)
-                            st.rerun()
+                    with right:
+                        with st.popover("Actions"):
+                            if idx > 0 and st.button("Move up"):
+                                cards_ip[idx - 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx - 1]
+                                save_board(st.session_state.cards)
+                                st.rerun()
 
-                    with c3:
-                        if idx < len(cards_ip) - 1 and st.button("⬇️", key=f"down_{idx}", use_container_width=True):
-                            cards_ip[idx + 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx + 1]
-                            save_board(st.session_state.cards)
-                            st.rerun()
+                            if idx < len(cards_ip) - 1 and st.button("Move down"):
+                                cards_ip[idx + 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx + 1]
+                                save_board(st.session_state.cards)
+                                st.rerun()
 
-                    with c4:
-                        if st.button("✅", key=f"to_done_{idx}", use_container_width=True):
-                            cards_done.append(card)
-                            cards_ip.pop(idx)
-                            save_board(st.session_state.cards)
-                            st.rerun()
+                            if st.button("Mark complete"):
+                                cards_done.append(card)
+                                cards_ip.pop(idx)
+                                save_board(st.session_state.cards)
+                                st.rerun()
 
-                    with c5:
-                        if st.button("🗑️", key=f"remove_ip_{idx}", use_container_width=True):
-                            cards_ip.pop(idx)
-                            save_board(st.session_state.cards)
-                            st.rerun()
+                            if st.button("Delete"):
+                                cards_ip.pop(idx)
+                                save_board(st.session_state.cards)
+                                st.rerun()
 
-    # ================= COMPLETE =================
+    # ===================== COMPLETE =====================
     with col2:
-        st.subheader("✅ Complete")
+        st.subheader("Complete")
 
         if not cards_done:
-            st.caption("No completed cards")
+            st.caption("No completed items")
         else:
             for idx, card in enumerate(cards_done):
                 with st.container(border=True):
-                    c1, c2, c3 = st.columns([5, 1, 1])
+                    left, right = st.columns([6, 1])
 
-                    with c1:
+                    with left:
                         with st.expander(card["client"]):
                             card["annual_rev"] = st.text_input(
                                 "Annual Revenue",
@@ -154,39 +143,40 @@ def prioritization_board_app():
                             )
                             save_board(st.session_state.cards)
 
-                    with c2:
-                        if st.button("🔄", key=f"to_ip_{idx}", use_container_width=True):
-                            cards_ip.append(card)
-                            cards_done.pop(idx)
-                            save_board(st.session_state.cards)
-                            st.rerun()
+                    with right:
+                        with st.popover("Actions"):
+                            if st.button("Move back to In Process"):
+                                cards_ip.append(card)
+                                cards_done.pop(idx)
+                                save_board(st.session_state.cards)
+                                st.rerun()
 
-                    with c3:
-                        if st.button("🗑️", key=f"remove_done_{idx}", use_container_width=True):
-                            cards_done.pop(idx)
-                            save_board(st.session_state.cards)
-                            st.rerun()
+                            if st.button("Delete"):
+                                cards_done.pop(idx)
+                                save_board(st.session_state.cards)
+                                st.rerun()
 
-        if cards_done and st.button("🧹 Clear Complete"):
-            st.session_state.cards["complete"] = []
-            save_board(st.session_state.cards)
-            st.rerun()
+        if cards_done:
+            if st.button("Clear Complete"):
+                st.session_state.cards["complete"] = []
+                save_board(st.session_state.cards)
+                st.rerun()
 
     st.divider()
 
-    # ---------------- Add Card ----------------
-    st.subheader("➕ Add New Card")
+    # ===================== ADD CARD =====================
+    st.subheader("Add New Item")
 
     with st.form("add_card_form", clear_on_submit=True):
         c1, c2, c3 = st.columns([3, 2, 1])
 
         with c1:
-            client_name = st.text_input("Client Name")
+            client_name = st.text_input("Client name")
 
         with c2:
             priority_input = st.text_input(
                 "Priority (number or C)",
-                help="Number = In Process priority, C = Complete"
+                help="Number = position in In Process, C = Complete"
             )
 
         with c3:
@@ -214,7 +204,7 @@ def prioritization_board_app():
 
     st.divider()
 
-    # ---------------- Export to Excel ----------------
+    # ===================== EXPORT =====================
     rows = []
 
     for i, card in enumerate(cards_ip, start=1):
@@ -244,7 +234,7 @@ def prioritization_board_app():
     buffer.seek(0)
 
     st.download_button(
-        "📥 Download Excel",
+        "Download Excel",
         data=buffer,
         file_name="prioritization_board.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
