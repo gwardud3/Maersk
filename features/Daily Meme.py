@@ -9,7 +9,7 @@ ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 def daily_meme_app():
     st.header("🖼️ Image Viewer")
 
-    image_name = "example_image.png"  # change if needed
+    image_name = "meme.png"  # change if needed
     image_path = os.path.join(ASSETS_DIR, image_name)
 
     if not os.path.exists(image_path):
