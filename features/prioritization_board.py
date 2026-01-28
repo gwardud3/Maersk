@@ -90,7 +90,7 @@ def prioritization_board_app():
                             save_board(st.session_state.cards)
 
                     with right:
-                        with st.popover("Actions", key=f"actions_ip_{idx}"):
+                        with st.popover("Actions"):
 
                             if idx > 0 and st.button("Move up", key=f"up_{idx}"):
                                 cards_ip[idx - 1], cards_ip[idx] = cards_ip[idx], cards_ip[idx - 1]
@@ -144,7 +144,7 @@ def prioritization_board_app():
                             save_board(st.session_state.cards)
 
                     with right:
-                        with st.popover("Actions", key=f"actions_done_{idx}"):
+                        with st.popover("Actions"):
 
                             if st.button("Move back to In Process", key=f"back_{idx}"):
                                 cards_ip.append(card)
