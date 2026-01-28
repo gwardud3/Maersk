@@ -8,20 +8,32 @@ import os
 DATA_DIR = "data"
 DATA_FILE = os.path.join(DATA_DIR, "prioritization_board.json")
 
+def empty_board():
+    return {"in_process": [], "complete": []}
+
 def load_board():
     if not os.path.exists(DATA_FILE):
-        return {"in_process": [], "complete": []}
+        return empty_board()
 
     try:
         with open(DATA_FILE, "r") as f:
             return json.load(f)
     except Exception:
-        return {"in_process": [], "complete": []}
+        return empty_board()
 
 def save_board(cards):
     os.makedirs(DATA_DIR, exist_ok=True)
     with open(DATA_FILE, "w") as f:
         json.dump(cards, f, indent=2)
+
+# ---------------- Helpers ----------------
+def new_card(name):
+    return {
+        "client": name,
+        "annual_rev": "",
+        "annual_spend": "",
+        "notes": ""
+    }
 
 # ---------------- Feature Entry Point ----------------
 def prioritization_board_app():
@@ -34,7 +46,6 @@ def prioritization_board_app():
     cards_ip = st.session_state.cards["in_process"]
     cards_done = st.session_state.cards["complete"]
 
-    # ---------------- Board Layout ----------------
     col1, col2 = st.columns(2)
 
     # ================= IN PROCESS =================
@@ -44,14 +55,30 @@ def prioritization_board_app():
         if not cards_ip:
             st.caption("No cards in process")
         else:
-            for idx, client in enumerate(cards_ip):
+            for idx, card in enumerate(cards_ip):
                 priority = idx + 1
 
                 with st.container(border=True):
                     c1, c2, c3, c4, c5 = st.columns([4, 1, 1, 1, 1])
 
                     with c1:
-                        st.markdown(f"**{priority}. {client}**")
+                        with st.expander(f"**{priority}. {card['client']}**"):
+                            card["annual_rev"] = st.text_input(
+                                "Annual Revenue",
+                                card["annual_rev"],
+                                key=f"rev_ip_{idx}"
+                            )
+                            card["annual_spend"] = st.text_input(
+                                "Annual Spend",
+                                card["annual_spend"],
+                                key=f"spend_ip_{idx}"
+                            )
+                            card["notes"] = st.text_area(
+                                "Notes",
+                                card["notes"],
+                                key=f"notes_ip_{idx}"
+                            )
+                            save_board(st.session_state.cards)
 
                     with c2:
                         if idx > 0 and st.button("⬆️", key=f"up_{idx}", use_container_width=True):
@@ -67,7 +94,7 @@ def prioritization_board_app():
 
                     with c4:
                         if st.button("✅", key=f"to_done_{idx}", use_container_width=True):
-                            cards_done.append(client)
+                            cards_done.append(card)
                             cards_ip.pop(idx)
                             save_board(st.session_state.cards)
                             st.rerun()
@@ -85,16 +112,32 @@ def prioritization_board_app():
         if not cards_done:
             st.caption("No completed cards")
         else:
-            for idx, client in enumerate(cards_done):
+            for idx, card in enumerate(cards_done):
                 with st.container(border=True):
                     c1, c2, c3 = st.columns([5, 1, 1])
 
                     with c1:
-                        st.markdown(f"**{client}**")
+                        with st.expander(card["client"]):
+                            card["annual_rev"] = st.text_input(
+                                "Annual Revenue",
+                                card["annual_rev"],
+                                key=f"rev_done_{idx}"
+                            )
+                            card["annual_spend"] = st.text_input(
+                                "Annual Spend",
+                                card["annual_spend"],
+                                key=f"spend_done_{idx}"
+                            )
+                            card["notes"] = st.text_area(
+                                "Notes",
+                                card["notes"],
+                                key=f"notes_done_{idx}"
+                            )
+                            save_board(st.session_state.cards)
 
                     with c2:
                         if st.button("🔄", key=f"to_ip_{idx}", use_container_width=True):
-                            cards_ip.append(client)
+                            cards_ip.append(card)
                             cards_done.pop(idx)
                             save_board(st.session_state.cards)
                             st.rerun()
@@ -137,16 +180,16 @@ def prioritization_board_app():
             if not name:
                 st.warning("Client name cannot be empty.")
             elif p == "c":
-                cards_done.append(name)
+                cards_done.append(new_card(name))
                 save_board(st.session_state.cards)
                 st.success(f"Added '{name}' to Complete")
             elif p.isdigit():
                 pos = max(0, min(int(p) - 1, len(cards_ip)))
-                cards_ip.insert(pos, name)
+                cards_ip.insert(pos, new_card(name))
                 save_board(st.session_state.cards)
                 st.success(f"Added '{name}' at priority {pos + 1}")
             else:
-                cards_ip.append(name)
+                cards_ip.append(new_card(name))
                 save_board(st.session_state.cards)
                 st.success(f"Added '{name}' to In Process")
 
@@ -155,11 +198,25 @@ def prioritization_board_app():
     # ---------------- Export to Excel ----------------
     rows = []
 
-    for i, client in enumerate(cards_ip, start=1):
-        rows.append({"Client": client, "Status": "In Process", "Priority": i})
+    for i, card in enumerate(cards_ip, start=1):
+        rows.append({
+            "Client": card["client"],
+            "Status": "In Process",
+            "Priority": i,
+            "Annual Revenue": card["annual_rev"],
+            "Annual Spend": card["annual_spend"],
+            "Notes": card["notes"]
+        })
 
-    for client in cards_done:
-        rows.append({"Client": client, "Status": "Complete", "Priority": ""})
+    for card in cards_done:
+        rows.append({
+            "Client": card["client"],
+            "Status": "Complete",
+            "Priority": "",
+            "Annual Revenue": card["annual_rev"],
+            "Annual Spend": card["annual_spend"],
+            "Notes": card["notes"]
+        })
 
     df = pd.DataFrame(rows)
 
@@ -173,3 +230,4 @@ def prioritization_board_app():
         file_name="prioritization_board.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
