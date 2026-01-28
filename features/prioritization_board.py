@@ -11,6 +11,14 @@ DATA_FILE = os.path.join(DATA_DIR, "prioritization_board.json")
 def empty_board():
     return {"in_process": [], "complete": []}
 
+def new_card(name):
+    return {
+        "client": name,
+        "annual_rev": "",
+        "annual_spend": "",
+        "notes": ""
+    }
+
 def load_board():
     if not os.path.exists(DATA_FILE):
         return empty_board()
@@ -21,19 +29,24 @@ def load_board():
     except Exception:
         return empty_board()
 
+def normalize_board(cards):
+    """
+    Migrate legacy string-based cards to dict-based cards.
+    """
+    for section in ["in_process", "complete"]:
+        normalized = []
+        for item in cards.get(section, []):
+            if isinstance(item, str):
+                normalized.append(new_card(item))
+            elif isinstance(item, dict):
+                normalized.append(item)
+        cards[section] = normalized
+    return cards
+
 def save_board(cards):
     os.makedirs(DATA_DIR, exist_ok=True)
     with open(DATA_FILE, "w") as f:
         json.dump(cards, f, indent=2)
-
-# ---------------- Helpers ----------------
-def new_card(name):
-    return {
-        "client": name,
-        "annual_rev": "",
-        "annual_spend": "",
-        "notes": ""
-    }
 
 # ---------------- Feature Entry Point ----------------
 def prioritization_board_app():
@@ -41,7 +54,9 @@ def prioritization_board_app():
 
     # ---------------- Initialize state ----------------
     if "cards" not in st.session_state:
-        st.session_state.cards = load_board()
+        loaded = load_board()
+        st.session_state.cards = normalize_board(loaded)
+        save_board(st.session_state.cards)
 
     cards_ip = st.session_state.cards["in_process"]
     cards_done = st.session_state.cards["complete"]
@@ -230,4 +245,3 @@ def prioritization_board_app():
         file_name="prioritization_board.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
