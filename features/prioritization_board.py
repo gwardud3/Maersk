@@ -40,7 +40,7 @@ def prioritization_board_app():
             st.caption("No cards in process")
         else:
             # Drag-and-drop sortable list
-            new_order = sortable(
+            new_order = sortables(
                 st.session_state.cards["in_process"],
                 direction="vertical",
                 key="in_process_sortable"
