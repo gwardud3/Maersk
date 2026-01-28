@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import io
-from streamlit_sortable import sortable
+from streamlit_sortables import sortables
 
 # ---------------- Feature Entry Point ----------------
 def prioritization_board_app():
