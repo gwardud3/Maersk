@@ -4,6 +4,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import os
 from math import radians, sin, cos, sqrt, atan2
+from shapely.geometry import LineString
 
 # ---------------- Resource path (repo-root safe) ----------------
 def resource_path(relative_path: str) -> str:
@@ -132,18 +133,19 @@ def warehouse_map_app():
                     ),
                     axis=1
                 )
-                nearest = warehouses.nsmallest(2, "distance_miles")
-                result_df = (
-                    nearest[["warehouse", "distance_miles"]]
-                    .assign(distance_miles=lambda d: d["distance_miles"].round(1))
-                    .rename(columns={
-                        "name": "Warehouse",
-                        "distance_miles": "Distance (miles)"
-                    })
-                    .reset_index(drop=True)
-                )
+                # Build distance lines (ZIP → warehouse)
+                lines = []
+                for _, row in nearest.iterrows():
+                    line = LineString([
+                        (zip_lon, zip_lat),
+                        (row.geometry.x, row.geometry.y)
+                    ])
+                    lines.append(line)
 
-                st.dataframe(result_df)
+                distance_lines = gpd.GeoDataFrame(
+                    geometry=lines,
+                    crs="EPSG:4326"
+                )
     # ---------------- Plot ----------------
     fig, ax = plt.subplots(figsize=(15, 10))
 
@@ -181,6 +183,14 @@ def warehouse_map_app():
             marker="*",
             label="Input ZIP"
         )
+    if nearest is not None:
+    distance_lines.plot(
+        ax=ax,
+        color="blue",
+        linewidth=2,
+        linestyle="--",
+        alpha=0.8
+    )
 
     # Continental US view
     ax.set_xlim(-130, -65)
