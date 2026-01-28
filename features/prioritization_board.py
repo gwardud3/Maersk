@@ -84,6 +84,12 @@ def prioritization_board_app():
                             done_cards.pop(idx)
                             st.rerun()
 
+        # -------- Clear Complete --------
+        if done_cards:
+            if st.button("🧹 Clear Complete", help="Remove all completed cards"):
+                st.session_state.cards["complete"] = []
+                st.rerun()
+
     st.divider()
 
     # ---------------- Add Card ----------------
@@ -96,19 +102,42 @@ def prioritization_board_app():
             client_name = st.text_input("Client Name")
 
         with c2:
-            section = st.selectbox("Section", ["In Process", "Complete"])
+            priority_input = st.text_input(
+                "Priority (number or C)",
+                help="Enter a number for In Process priority, or 'C' to mark complete"
+            )
 
         with c3:
             submitted = st.form_submit_button("Add")
 
         if submitted:
             name = client_name.strip()
+
             if not name:
                 st.warning("Client name cannot be empty.")
             else:
-                key = "in_process" if section == "In Process" else "complete"
-                st.session_state.cards[key].append(name)
-                st.success(f"Added '{name}' to {section}")
+                priority_val = priority_input.strip()
+
+                # ---- Complete ----
+                if priority_val.lower() == "c":
+                    st.session_state.cards["complete"].append(name)
+                    st.success(f"Added '{name}' to Complete")
+
+                # ---- In Process with priority ----
+                elif priority_val.isdigit():
+                    position = int(priority_val) - 1
+                    cards = st.session_state.cards["in_process"]
+
+                    # Clamp position
+                    position = max(0, min(position, len(cards)))
+                    cards.insert(position, name)
+
+                    st.success(f"Added '{name}' to In Process at priority {position + 1}")
+
+                # ---- Default: bottom of In Process ----
+                else:
+                    st.session_state.cards["in_process"].append(name)
+                    st.success(f"Added '{name}' to In Process")
 
     st.divider()
 
@@ -143,3 +172,4 @@ def prioritization_board_app():
         file_name="prioritization_board.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
