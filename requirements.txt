@@ -8,4 +8,4 @@ fiona
 pyproj
 rtree
 openpyxl
-streamlit-sortable
+streamlit-sortables
