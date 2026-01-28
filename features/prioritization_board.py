@@ -13,13 +13,93 @@ def prioritization_board_app():
             "complete": []
         }
 
+    # ---------------- Board Layout ----------------
+    col1, col2 = st.columns(2)
+
+    # ================= IN PROCESS =================
+    with col1:
+        st.subheader("🔄 In Process")
+
+        cards = st.session_state.cards["in_process"]
+
+        if not cards:
+            st.caption("No cards in process")
+        else:
+            for idx, client in enumerate(cards):
+                priority = idx + 1
+
+                with st.container(border=True):
+                    c1, c2, c3, c4, c5 = st.columns([4, 1, 1, 1, 1])
+
+                    with c1:
+                        st.markdown(f"**{priority}. {client}**")
+
+                    with c2:
+                        if idx > 0:
+                            if st.button("⬆️", key=f"up_{idx}", help="Move up", use_container_width=True):
+                                cards[idx - 1], cards[idx] = cards[idx], cards[idx - 1]
+                                st.rerun()
+
+                    with c3:
+                        if idx < len(cards) - 1:
+                            if st.button("⬇️", key=f"down_{idx}", help="Move down", use_container_width=True):
+                                cards[idx + 1], cards[idx] = cards[idx], cards[idx + 1]
+                                st.rerun()
+
+                    with c4:
+                        if st.button("✅", key=f"to_done_{idx}", help="Mark complete", use_container_width=True):
+                            st.session_state.cards["complete"].append(client)
+                            cards.pop(idx)
+                            st.rerun()
+
+                    with c5:
+                        if st.button("🗑️", key=f"remove_ip_{idx}", help="Remove", use_container_width=True):
+                            cards.pop(idx)
+                            st.rerun()
+
+    # ================= COMPLETE =================
+    with col2:
+        st.subheader("✅ Complete")
+
+        done_cards = st.session_state.cards["complete"]
+
+        if not done_cards:
+            st.caption("No completed cards")
+        else:
+            for idx, client in enumerate(done_cards):
+                with st.container(border=True):
+                    c1, c2, c3 = st.columns([5, 1, 1])
+
+                    with c1:
+                        st.markdown(f"**{client}**")
+
+                    with c2:
+                        if st.button("🔄", key=f"to_ip_{idx}", help="Move back to In Process", use_container_width=True):
+                            st.session_state.cards["in_process"].append(client)
+                            done_cards.pop(idx)
+                            st.rerun()
+
+                    with c3:
+                        if st.button("🗑️", key=f"remove_done_{idx}", help="Remove", use_container_width=True):
+                            done_cards.pop(idx)
+                            st.rerun()
+
+    st.divider()
+
     # ---------------- Add Card ----------------
     st.subheader("➕ Add New Card")
 
     with st.form("add_card_form", clear_on_submit=True):
-        client_name = st.text_input("Client Name")
-        section = st.selectbox("Section", ["In Process", "Complete"])
-        submitted = st.form_submit_button("Add")
+        c1, c2, c3 = st.columns([3, 2, 1])
+
+        with c1:
+            client_name = st.text_input("Client Name")
+
+        with c2:
+            section = st.selectbox("Section", ["In Process", "Complete"])
+
+        with c3:
+            submitted = st.form_submit_button("Add")
 
         if submitted:
             name = client_name.strip()
@@ -32,85 +112,8 @@ def prioritization_board_app():
 
     st.divider()
 
-    # ---------------- Board Layout ----------------
-    col1, col2 = st.columns(2)
-
-    # ================= IN PROCESS =================
-    with col1:
-        st.subheader("🔄 In Process (Priority Order)")
-
-        cards = st.session_state.cards["in_process"]
-
-        if not cards:
-            st.caption("No cards in process")
-        else:
-            for idx, client in enumerate(cards):
-                priority = idx + 1
-
-                c1, c2, c3, c4, c5 = st.columns([4, 1, 1, 1, 1])
-
-                with c1:
-                    st.markdown(f"**{priority}. {client}**")
-
-                # Move Up
-                with c2:
-                    if idx > 0:
-                        if st.button("⬆️", key=f"up_{idx}"):
-                            cards[idx - 1], cards[idx] = cards[idx], cards[idx - 1]
-                            st.rerun()
-
-                # Move Down
-                with c3:
-                    if idx < len(cards) - 1:
-                        if st.button("⬇️", key=f"down_{idx}"):
-                            cards[idx + 1], cards[idx] = cards[idx], cards[idx + 1]
-                            st.rerun()
-
-                # Move to Complete
-                with c4:
-                    if st.button("✅", key=f"to_done_{idx}"):
-                        st.session_state.cards["complete"].append(client)
-                        cards.pop(idx)
-                        st.rerun()
-
-                # Remove
-                with c5:
-                    if st.button("❌", key=f"remove_ip_{idx}"):
-                        cards.pop(idx)
-                        st.rerun()
-
-    # ================= COMPLETE =================
-    with col2:
-        st.subheader("✅ Complete")
-
-        done_cards = st.session_state.cards["complete"]
-
-        if not done_cards:
-            st.caption("No completed cards")
-        else:
-            for idx, client in enumerate(done_cards):
-                c1, c2, c3 = st.columns([5, 1, 1])
-
-                with c1:
-                    st.markdown(f"**{client}**")
-
-                # Move back to In Process (bottom priority)
-                with c2:
-                    if st.button("🔄", key=f"to_ip_{idx}"):
-                        st.session_state.cards["in_process"].append(client)
-                        done_cards.pop(idx)
-                        st.rerun()
-
-                # Remove
-                with c3:
-                    if st.button("❌", key=f"remove_done_{idx}"):
-                        done_cards.pop(idx)
-                        st.rerun()
-
-    st.divider()
-
     # ---------------- Export to Excel ----------------
-    st.subheader("📤 Export Board to Excel")
+    st.subheader("📤 Export Board")
 
     rows = []
 
