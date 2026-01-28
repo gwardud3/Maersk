@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import io
-from streamlit_sortables import sortables
+from streamlit_sortables import sortable_items
 
 # ---------------- Feature Entry Point ----------------
 def prioritization_board_app():
@@ -40,7 +40,7 @@ def prioritization_board_app():
             st.caption("No cards in process")
         else:
             # Drag-and-drop sortable list
-            new_order = sortables(
+            new_order = sortable_items(
                 st.session_state.cards["in_process"],
                 direction="vertical",
                 key="in_process_sortable"
