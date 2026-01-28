@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📊 Pricing & Network Mapping Tools")
+st.title("📊 Pricing Team Tools for Sales")
 
 menu = st.sidebar.radio(
     "Select a Tool",
