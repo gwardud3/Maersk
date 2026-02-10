@@ -97,11 +97,16 @@ def process_data(origin_list, customer_name):
     ax.set_ylim(24, 50)
     ax.set_aspect("equal", adjustable="box")
 
-    used_zones = sorted(zip3_shapes["Zone"].dropna().unique())
+    used_zones = sorted(
+        z for z in zip3_shapes["Zone"].dropna().unique()
+        if z != 9
+    )
+
     legend_handles = [
         mpatches.Patch(color=zone_colors[z], label=str(z))
         for z in used_zones
     ]
+    
     ax.legend(
         handles=legend_handles,
         title="Zone",
