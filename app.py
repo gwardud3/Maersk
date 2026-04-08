@@ -14,7 +14,7 @@ st.title("📊 Pricing Team Tools for Sales")
 
 menu = st.sidebar.radio(
     "Select a Tool",
-    ["Zone Map", "Warehouse Map", "Warehouse Sort"]
+    ["Zone Map", "Warehouse Map", "Warehouse Sort", "Heatmap"]
 )
 
 if menu == "Zone Map":
