@@ -40,6 +40,7 @@ def load_user_data():
 # ================================
 # 📂 LOAD STATIC FILES
 # ================================
+@st.cache_data
 def load_static_data():
     try:
         maersk_zones = pd.read_excel("Maersk Zones.xlsx")
@@ -66,6 +67,7 @@ def load_static_data():
 # ================================
 # 🗺️ BUILD ZONE LOOKUP
 # ================================
+@st.cache_data
 def build_zone_lookup(maersk_zones, origins):
     rows = []
 
@@ -87,28 +89,20 @@ def build_zone_lookup(maersk_zones, origins):
 # 🔗 MAP ZONES TO DATA
 # ================================
 def add_zone_columns(data, zone_lookup, warehouse_df):
+
+    zone_dict = dict(zip(zone_lookup["ID"], zone_lookup["Zone"]))
+
     mapping = dict(zip(
         warehouse_df["ThreeOriginZip"],
         warehouse_df["Location"]
     ))
 
     for origin, location in mapping.items():
-        temp_col = f"from_{origin}"
         zone_col = f"{location} Zone"
 
-        data[temp_col] = origin + "-" + data["Dest3"]
+        keys = origin + "-" + data["Dest3"]
 
-        data = data.merge(
-            zone_lookup,
-            left_on=temp_col,
-            right_on="ID",
-            how="left"
-        )
-
-        data[zone_col] = data["Zone"]
-        data.drop(columns=["ID", "Zone"], inplace=True)
-
-    data = data.drop(columns=[c for c in data.columns if c.startswith("from_")])
+        data[zone_col] = keys.map(zone_dict)
 
     return data
 
@@ -120,18 +114,20 @@ def evaluate_combinations(data, selected_locations, num_nodes):
     zone_cols = [f"{loc} Zone" for loc in selected_locations]
     results = []
 
+    total_vol = data["Volume"].sum()
+
     for combo in combinations(zone_cols, num_nodes):
 
         combo_name = [c.replace(" Zone", "") for c in combo]
+        subset = data[list(combo)]
 
-        best_zone = data[list(combo)].min(axis=1)
+        best_zone = subset.min(axis=1)
         weighted_avg = (best_zone * data["Volume"]).sum() / data["Volume"].sum()
 
         # Volume split
-        winner = data[list(combo)].idxmin(axis=1)
+        winner = subset.idxmin(axis=1)
 
         volume_split = {}
-        total_vol = data["Volume"].sum()
 
         for col in combo:
             vol = data.loc[winner == col, "Volume"].sum()
@@ -208,24 +204,6 @@ def warehouse_sort_app():
         ]
 
         origins = selected_df["ThreeOriginZip"].tolist()
-
-        st.subheader("DEBUG: Inputs")
-
-        st.write("Selected Locations:", selected_locations)
-        st.write("Origins:", origins)
-
-        st.write("Warehouse DF sample:")
-        st.dataframe(selected_df.head())
-
-        st.write("Maersk Zones sample:")
-        st.dataframe(maersk_zones.head())
-
-        st.subheader("DEBUG: Data Types")
-
-        st.write("Origins type:", type(origins[0]) if origins else "Empty")
-
-        st.write("Set_ID dtype:", maersk_zones["Set_ID"].dtype)
-        st.write("Sample Set_ID values:", maersk_zones["Set_ID"].head().tolist())
 
         # Build lookup
         zone_lookup = build_zone_lookup(maersk_zones, origins)
