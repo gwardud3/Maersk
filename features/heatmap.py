@@ -16,6 +16,9 @@ def load_zip3_shapes():
 
     # Normalize ZIP3 column
     gdf.columns = [c.upper() for c in gdf.columns]
+    
+    st.write("Columns:", gdf.columns.tolist())
+    st.write("Geometry column:", gdf.geometry.name)
 
     if "ZIP3" not in gdf.columns:
         raise ValueError("ZIP3 column not found in zip3_simplified.gpkg")
