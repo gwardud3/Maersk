@@ -107,6 +107,22 @@ def add_zone_columns(data, zone_lookup, warehouse_df):
     return data
 
 
+
+def normalize_zip(zip_code):
+    if not zip_code:
+        return None
+
+    zip_code = str(zip_code).strip()
+
+    if not zip_code.isdigit():
+        return None
+
+    if len(zip_code) == 5:
+        return zip_code[:3]
+    elif len(zip_code) == 3:
+        return zip_code.zfill(3)
+    else:
+        return None
 # ================================
 # 📊 OPTIMIZATION ENGINE
 # ================================
@@ -178,7 +194,10 @@ def warehouse_sort_app():
     if data is None:
         return
 
-    st.success("All data loaded successfully 🚀")
+    if "custom_warehouses" not in st.session_state:
+        st.session_state.custom_warehouses = pd.DataFrame(
+            columns=["Location", "ThreeOriginZip"]
+        )
 
     # Warehouse selection
     st.subheader("Select Warehouses 🏭")
@@ -193,7 +212,36 @@ def warehouse_sort_app():
     with col2:
         custom_zip = st.text_input("ZIP Code (3 or 5 digits)")
 
-    locations = warehouse_df["Location"].tolist()
+    if st.button("Add Custom Warehouse"):
+
+        origin_zip = normalize_zip(custom_zip)
+
+        if not custom_name:
+            st.error("Please enter a location name")
+        elif origin_zip is None:
+            st.error("Enter a valid 3 or 5 digit ZIP")
+        else:
+            new_row = pd.DataFrame([{
+                "Location": custom_name,
+                "ThreeOriginZip": origin_zip
+            }])
+
+            st.session_state.custom_warehouses = pd.concat(
+                [st.session_state.custom_warehouses, new_row],
+                ignore_index=True
+            )
+
+            st.success(f"Added: {custom_name} ({origin_zip})")
+
+    combined_df = pd.concat(
+        [
+            warehouse_df[["Location", "ThreeOriginZip"]],
+            st.session_state.custom_warehouses
+        ],
+        ignore_index=True
+    )
+
+    locations = combined_df["Location"].tolist()
 
     selected_locations = st.multiselect(
         "Choose locations:",
@@ -209,9 +257,14 @@ def warehouse_sort_app():
             st.warning("Select enough warehouses")
             return
 
-        selected_df = warehouse_df[
-            warehouse_df["Location"].isin(selected_locations)
+        selected_df = combined_df[
+            combined_df["Location"].isin(selected_locations)
         ]
+
+        valid_origins = maersk_zones["Set_ID"].unique()
+
+        if origin_zip not in valid_origins:
+            st.warning(f"ZIP {origin_zip} not found in Maersk zones")
 
         origins = selected_df["ThreeOriginZip"].tolist()
 
