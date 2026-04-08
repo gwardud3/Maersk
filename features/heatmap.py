@@ -134,7 +134,7 @@ def heatmap_app():
                 how="left"
             )
 
-            gdf = gdf.dropna(subset=["geometry"])
+            gdf = gdf.dropna(subset=["GEOMETRY"])
 
             progress.progress(60)
 
