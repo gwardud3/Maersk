@@ -232,26 +232,32 @@ def warehouse_sort_app():
             elif origin_zip is None:
                 st.error("Enter a valid ZIP")
             else:
-                # Prevent duplicates
                 existing = pd.concat([
                     warehouse_df["ThreeOriginZip"],
                     st.session_state.custom_warehouses["ThreeOriginZip"]
                 ]).tolist()
 
-                if origin_zip in existing:
-                    st.warning("This ZIP already exists")
-                else:
-                    new_row = pd.DataFrame([{
-                        "Location": custom_name,
-                        "ThreeOriginZip": origin_zip
-                    }])
+                # 🚨 DUPLICATE DETECTED
+                if origin_zip in existing and not st.session_state.get("confirm_duplicate", False):
+                    st.warning(f"ZIP {origin_zip} already exists. Click again to confirm adding duplicate.")
 
-                    st.session_state.custom_warehouses = pd.concat(
-                        [st.session_state.custom_warehouses, new_row],
-                        ignore_index=True
-                    )
+                    st.session_state.confirm_duplicate = True
+                    return
 
-                    st.success(f"Added: {custom_name} ({origin_zip})")
+                # ✅ ADD WAREHOUSE
+                new_row = pd.DataFrame([{
+                    "Location": custom_name,
+                    "ThreeOriginZip": origin_zip
+                }])
+
+                st.session_state.custom_warehouses = pd.concat(
+                    [st.session_state.custom_warehouses, new_row],
+                    ignore_index=True
+                )
+
+                st.session_state.confirm_duplicate = False
+
+                st.success(f"Added: {custom_name} ({origin_zip})")
 
     # ================================
     # COMBINE WAREHOUSES
@@ -273,15 +279,24 @@ def warehouse_sort_app():
     # ================================
     st.subheader("Select Warehouses 🏭")
 
-    locations = combined_df["Location"].tolist()
+    with st.form("selection_form"):
 
-    selected_locations = st.multiselect(
-        "Choose locations:",
-        options=locations,
-        default=locations[:3]
-    )
+        locations = combined_df["Location"].tolist()
 
-    num_nodes = st.selectbox("Number of warehouses:", [1, 2, 3])
+        selected_locations = st.multiselect(
+            "Choose locations:",
+            options=locations,
+            default=locations[:3]
+        )
+
+        num_nodes = st.selectbox("Number of warehouses:", [1, 2, 3])
+
+        optimize_clicked = st.form_submit_button("Optimize")
+
+        if optimize_clicked:
+            st.session_state.run_optimization = True
+            st.session_state.selected_locations = selected_locations
+            st.session_state.num_nodes = num_nodes
 
     # ================================
     # OPTIMIZE BUTTON
@@ -293,6 +308,9 @@ def warehouse_sort_app():
     # RUN OPTIMIZATION (CONTROLLED)
     # ================================
     if st.session_state.run_optimization:
+
+        selected_locations = st.session_state.selected_locations
+        num_nodes = st.session_state.num_nodes
 
         if len(selected_locations) < num_nodes:
             st.warning("Select enough warehouses")
