@@ -183,6 +183,16 @@ def warehouse_sort_app():
     # Warehouse selection
     st.subheader("Select Warehouses 🏭")
 
+    st.subheader("Add Custom Warehouse (Optional)")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        custom_name = st.text_input("Custom Location Name")
+
+    with col2:
+        custom_zip = st.text_input("ZIP Code (3 or 5 digits)")
+
     locations = warehouse_df["Location"].tolist()
 
     selected_locations = st.multiselect(
