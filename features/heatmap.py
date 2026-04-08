@@ -33,7 +33,7 @@ def load_zip3_shapes():
 @st.cache_data
 def load_states():
     try:
-        gdf = gpd.read_file("states_preprocessed.gpkg")
+        gdf = gpd.read_file("shapefiles/states_preprocessed.gpkg")
         return gdf
     except:
         return None
