@@ -46,6 +46,13 @@ def load_static_data():
         warehouse_sorting_loc = pd.read_excel("Warehouse & Sorting Locations.xlsx")
         maersk_tnt = pd.read_excel("Service TNT.xlsx")
 
+        maersk_zones["Set_ID"] = (
+            maersk_zones["Set_ID"]
+            .astype(int)      # ensure numeric first
+            .astype(str)
+            .str.zfill(3)
+        )
+
         warehouse_sorting_loc["Zip"] = warehouse_sorting_loc["Zip"].astype(str).str.zfill(5)
         warehouse_sorting_loc["ThreeOriginZip"] = warehouse_sorting_loc["Zip"].str[:3]
 
