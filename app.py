@@ -2,8 +2,7 @@ import streamlit as st
 
 from features.zone_map import zone_map_app
 from features.warehouse_map import warehouse_map_app
-from features.prioritization_board import prioritization_board_app
-from features.warehouse_sort import daily_meme_app
+from features.warehouse_sort import warehouse_sort_app
 
 st.set_page_config(
     page_title="Pricing Map Tools",
