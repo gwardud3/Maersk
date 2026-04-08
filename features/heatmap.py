@@ -12,7 +12,7 @@ import numpy as np
 # ================================
 @st.cache_data
 def load_zip3_shapes():
-    gdf = gpd.read_file("zip3_simplified.gpkg")
+    gdf = gpd.read_file("shapefiles/zip3_simplified.gpkg")
 
     # Normalize column names
     gdf.columns = [c.upper() for c in gdf.columns]
