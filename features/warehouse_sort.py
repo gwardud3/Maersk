@@ -275,7 +275,7 @@ def warehouse_sort_app():
         st.dataframe(st.session_state.custom_warehouses)
 
     # ================================
-    # SELECTION UI
+    # SELECTION UI (NO AUTO RUN)
     # ================================
     st.subheader("Select Warehouses 🏭")
 
@@ -293,64 +293,53 @@ def warehouse_sort_app():
 
         optimize_clicked = st.form_submit_button("Optimize")
 
-        if optimize_clicked:
-            st.session_state.run_optimization = True
-            st.session_state.selected_locations = selected_locations
-            st.session_state.num_nodes = num_nodes
 
     # ================================
-    # OPTIMIZE BUTTON
+    # RUN OPTIMIZATION (ONLY ON CLICK)
     # ================================
-    if st.button("Optimize"):
-        st.session_state.run_optimization = True
-
-    # ================================
-    # RUN OPTIMIZATION (CONTROLLED)
-    # ================================
-    if st.session_state.run_optimization:
-
-        selected_locations = st.session_state.selected_locations
-        num_nodes = st.session_state.num_nodes
+    if optimize_clicked:
 
         if len(selected_locations) < num_nodes:
             st.warning("Select enough warehouses")
-            return
+        else:
+            with st.spinner("Running optimization..."):
 
-        data = data.copy()
+                data_copy = data.copy()
 
-        selected_df = combined_df[
-            combined_df["Location"].isin(selected_locations)
-        ]
+                selected_df = combined_df[
+                    combined_df["Location"].isin(selected_locations)
+                ]
 
-        origins = selected_df["ThreeOriginZip"].tolist()
+                origins = selected_df["ThreeOriginZip"].tolist()
 
-        # Validate ALL origins
-        valid_origins = set(maersk_zones["Set_ID"])
-        invalid = [o for o in origins if o not in valid_origins]
+                # Validate origins
+                valid_origins = set(maersk_zones["Set_ID"])
+                invalid = [o for o in origins if o not in valid_origins]
 
-        if invalid:
-            st.warning(f"Invalid origins not in Maersk zones: {invalid}")
+                if invalid:
+                    st.warning(f"Invalid origins not in Maersk zones: {invalid}")
 
-        # Build lookup
-        origins_tuple = tuple(sorted(origins))  # for caching
-        zone_lookup = build_zone_lookup(maersk_zones, origins_tuple)
+                # Build lookup (cache-friendly)
+                origins_tuple = tuple(sorted(origins))
+                zone_lookup = build_zone_lookup(maersk_zones, origins_tuple)
 
-        # Map zones
-        data = add_zone_columns(data, zone_lookup, selected_df)
+                # Map zones
+                data_copy = add_zone_columns(data_copy, zone_lookup, selected_df)
 
-        # Optimize
-        results_df = evaluate_combinations(data, selected_locations, num_nodes)
+                # Optimize
+                results_df = evaluate_combinations(data_copy, selected_locations, num_nodes)
 
-        st.subheader("Optimization Results")
-        st.dataframe(results_df)
+            # ================================
+            # OUTPUT
+            # ================================
+            st.subheader("Optimization Results")
+            st.dataframe(results_df)
 
-        # Best combo
-        best_combo = results_df.iloc[0]["Locations"].split(" | ")
+            best_combo = results_df.iloc[0]["Locations"].split(" | ")
 
-        st.success(f"Best Choice: {' & '.join(best_combo)}")
+            st.success(f"Best Choice: {' & '.join(best_combo)}")
 
-        # Distribution
-        data, summary = build_distribution(data, best_combo)
+            data_copy, summary = build_distribution(data_copy, best_combo)
 
-        st.subheader("Zone Distribution")
-        st.dataframe(summary)
+            st.subheader("Zone Distribution")
+            st.dataframe(summary)
