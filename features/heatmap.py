@@ -12,21 +12,23 @@ import numpy as np
 # ================================
 @st.cache_data
 def load_zip3_shapes():
-    gdf = gpd.read_file("shapefiles/zip3_simplified.gpkg")
+    gdf = gpd.read_file("zip3_simplified.gpkg")
 
-    # Normalize ZIP3 column
+    # Normalize column names
     gdf.columns = [c.upper() for c in gdf.columns]
-    
-    st.write("Columns:", gdf.columns.tolist())
-    st.write("Geometry column:", gdf.geometry.name)
 
-    if "ZIP3" not in gdf.columns:
-        raise ValueError("ZIP3 column not found in zip3_simplified.gpkg")
+    # 🔥 CRITICAL: Set geometry column
+    if "GEOMETRY" in gdf.columns:
+        gdf = gdf.set_geometry("GEOMETRY")
+    else:
+        st.error("No GEOMETRY column found")
+        st.write(gdf.columns)
+        return None
 
+    # Clean ZIP3
     gdf["ZIP3"] = gdf["ZIP3"].astype(str).str.zfill(3)
 
     return gdf
-
 
 @st.cache_data
 def load_states():
