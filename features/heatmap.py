@@ -5,16 +5,39 @@ import streamlit as st
 import pandas as pd
 import folium as fm
 import numpy as np
-import time
 
 
-def heatmap_app():
+# ================================
+# 📂 LOAD GEOSPATIAL FILES (CACHED)
+# ================================
+@st.cache_data
+def load_zip3_shapes():
+    gdf = gpd.read_file("zip3_simplified.gpkg")
 
-    st.header("Heatmap Tool 🗺️")
+    # Normalize ZIP3 column
+    gdf.columns = [c.upper() for c in gdf.columns]
 
-    # ================================
-    # LOAD USER DATA
-    # ================================
+    if "ZIP3" not in gdf.columns:
+        raise ValueError("ZIP3 column not found in zip3_simplified.gpkg")
+
+    gdf["ZIP3"] = gdf["ZIP3"].astype(str).str.zfill(3)
+
+    return gdf
+
+
+@st.cache_data
+def load_states():
+    try:
+        gdf = gpd.read_file("states_preprocessed.gpkg")
+        return gdf
+    except:
+        return None
+
+
+# ================================
+# 📥 LOAD USER DATA
+# ================================
+def load_heatmap_data():
     uploaded_file = st.file_uploader(
         "Upload your shipment data (.xlsx)",
         type=["xlsx"],
@@ -22,7 +45,7 @@ def heatmap_app():
     )
 
     if uploaded_file is None:
-        return
+        return None
 
     try:
         data = pd.read_excel(uploaded_file)
@@ -32,15 +55,31 @@ def heatmap_app():
 
         if missing:
             st.error(f"Missing required columns: {missing}")
-            return
+            return None
 
         data["DestZip"] = data["DestZip"].astype(str).str.zfill(5)
+        data["Dest3"] = data["DestZip"].str[:3]
 
         st.success("File uploaded successfully ✅")
         st.dataframe(data.head())
 
+        return data
+
     except Exception as e:
         st.error(f"Error reading file: {e}")
+        return None
+
+
+# ================================
+# 🗺️ MAIN APP
+# ================================
+def heatmap_app():
+
+    st.header("Heatmap Tool 🗺️")
+
+    # Load user data
+    data = load_heatmap_data()
+    if data is None:
         return
 
     # ================================
@@ -50,10 +89,7 @@ def heatmap_app():
 
         origins = ["All Origins"] + sorted(data["OriginZip"].dropna().unique())
 
-        selected_origin = st.selectbox(
-            "Select Origin",
-            origins
-        )
+        selected_origin = st.selectbox("Filter by Origin", origins)
 
         if selected_origin == "All Origins":
             filtered_data = data
@@ -64,7 +100,7 @@ def heatmap_app():
         filtered_data = data
 
     # ================================
-    # HEATMAP BUTTON (CONTROLLED RUN)
+    # HEATMAP BUTTON
     # ================================
     if st.button("Generate Heatmap"):
 
@@ -72,65 +108,69 @@ def heatmap_app():
 
             progress = st.progress(0)
 
-            # Load shapefile
-            df_zips = gpd.read_file("tabs/heatmap_files/USA_ZIP_Code_Boundaries.shp")
+            # Load geospatial data
+            zip3_shapes = load_zip3_shapes()
+            states = load_states()
+
             progress.progress(20)
 
-            df_zips["ZIP_CODE"] = (
-                df_zips["ZIP_CODE"]
-                .astype(str)
-                .str.split(".").str[0]
-                .str.zfill(5)
-            )
-
-            filtered_data["DestZip"] = (
-                filtered_data["DestZip"]
-                .astype(str)
-                .str.split(".").str[0]
-                .str.zfill(5)
+            # Aggregate to ZIP3
+            agg = (
+                filtered_data.groupby("Dest3", as_index=False)["Volume"]
+                .sum()
             )
 
             progress.progress(40)
 
-            # Filter relevant zips
-            zip_list = filtered_data["DestZip"].unique().tolist()
-            df_zips = df_zips[df_zips["ZIP_CODE"].isin(zip_list)]
-
-            progress.progress(60)
-
-            # Merge geometry
+            # Merge with geometry
             gdf = pd.merge(
-                filtered_data,
-                df_zips,
-                left_on="DestZip",
-                right_on="ZIP_CODE",
+                agg,
+                zip3_shapes,
+                left_on="Dest3",
+                right_on="ZIP3",
                 how="left"
             )
 
-            # Aggregate
-            gdf = gdf.groupby("DestZip", as_index=False).agg({
-                "Volume": "sum",
-                "geometry": "first"
-            })
-
             gdf = gdf.dropna(subset=["geometry"])
 
-            progress.progress(75)
+            progress.progress(60)
 
-            # Build map
+            # Create map
             m = fm.Map(location=[39.5, -98.35], zoom_start=4)
 
+            # Optional state overlay
+            if states is not None:
+                fm.GeoJson(
+                    states,
+                    name="States",
+                    style_function=lambda x: {
+                        "fillColor": "none",
+                        "color": "black",
+                        "weight": 1
+                    }
+                ).add_to(m)
+
+            # Build heat data
             heat_data = []
 
             for _, row in gdf.iterrows():
-                if row["geometry"].is_valid:
-                    centroid = row["geometry"].centroid
+                geom = row["geometry"]
+
+                if geom is not None and geom.is_valid:
+                    centroid = geom.centroid
+
+                    # Avoid log(0)
+                    volume = max(row["Volume"], 1)
+
                     heat_data.append([
                         centroid.y,
                         centroid.x,
-                        np.log(row["Volume"])
+                        np.log(volume)
                     ])
 
+            progress.progress(80)
+
+            # Add heatmap layer
             HeatMap(
                 heat_data,
                 radius=7,
@@ -147,13 +187,13 @@ def heatmap_app():
 
             progress.progress(100)
 
-            # Save to session
+            # Save HTML to session
             st.session_state["heatmap_html"] = m.get_root().render()
 
         st.success("Heatmap ready!")
 
     # ================================
-    # DISPLAY MAP
+    # DISPLAY + DOWNLOAD
     # ================================
     if "heatmap_html" in st.session_state:
 
@@ -164,7 +204,7 @@ def heatmap_app():
 
         filename = st.text_input(
             "Enter file name (without .html):",
-            "map"
+            "heatmap"
         )
 
         if filename:
