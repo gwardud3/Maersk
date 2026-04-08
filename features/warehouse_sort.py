@@ -202,6 +202,17 @@ def warehouse_sort_app():
 
         origins = selected_df["ThreeOriginZip"].tolist()
 
+        st.subheader("DEBUG: Inputs")
+
+        st.write("Selected Locations:", selected_locations)
+        st.write("Origins:", origins)
+
+        st.write("Warehouse DF sample:")
+        st.dataframe(selected_df.head())
+
+        st.write("Maersk Zones sample:")
+        st.dataframe(maersk_zones.head())
+
         # Build lookup
         zone_lookup = build_zone_lookup(maersk_zones, origins)
 
