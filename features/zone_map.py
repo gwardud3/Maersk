@@ -95,7 +95,7 @@ def process_data(origin_list, customer_name):
     # Continental US view
     ax.set_xlim(-130, -65)
     ax.set_ylim(24, 50)
-    ax.set_aspect("equal", adjustable="box")
+    ax.set_aspect(1.2, adjustable="box")
 
     used_zones = sorted(
         z for z in zip3_shapes["Zone"].dropna().unique()
