@@ -213,6 +213,13 @@ def warehouse_sort_app():
         st.write("Maersk Zones sample:")
         st.dataframe(maersk_zones.head())
 
+        st.subheader("DEBUG: Data Types")
+
+        st.write("Origins type:", type(origins[0]) if origins else "Empty")
+
+        st.write("Set_ID dtype:", maersk_zones["Set_ID"].dtype)
+        st.write("Sample Set_ID values:", maersk_zones["Set_ID"].head().tolist())
+
         # Build lookup
         zone_lookup = build_zone_lookup(maersk_zones, origins)
 
