@@ -39,6 +39,8 @@ def load_warehouses():
     # Normalize column names
     df.columns = df.columns.str.strip().str.lower()
 
+    st.print(f"Warehouse file columns: {df.columns.tolist()}")
+
     required_cols = {"building name", "lat", "long"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
