@@ -133,7 +133,7 @@ def warehouse_map_app():
                     ),
                     axis=1
                 )
-                nearest = warehouses.nsmallest(2, "distance_miles")
+                nearest = warehouses.nsmallest(3, "distance_miles")
                 
                 # Build distance lines (ZIP → warehouse)
                 lines = []
