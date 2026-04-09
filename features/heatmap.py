@@ -159,7 +159,7 @@ def heatmap_app():
             heat_data = []
 
             for _, row in gdf.iterrows():
-                geom = row["geometry"]
+                geom = row["GEOMETRY"]
 
                 if geom is not None and geom.is_valid:
                     centroid = geom.centroid
