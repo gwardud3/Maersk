@@ -6,11 +6,11 @@ from features.warehouse_sort import warehouse_sort_app
 from features.heatmap import heatmap_app
 
 st.set_page_config(
-    page_title="Pricing Map Tools",
+    page_title="Pricing Tools",
     layout="wide"
 )
 
-st.title("📊 Pricing Team Tools for Sales")
+st.title("📊 Pricing Team Tools (for Other Teams)")
 
 menu = st.sidebar.radio(
     "Select a Tool",

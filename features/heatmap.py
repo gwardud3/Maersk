@@ -30,15 +30,6 @@ def load_zip3_shapes():
 
     return gdf
 
-@st.cache_data
-def load_states():
-    try:
-        gdf = gpd.read_file("shapefiles/states_preprocessed.gpkg")
-        return gdf
-    except:
-        return None
-
-
 # ================================
 # 📥 LOAD USER DATA
 # ================================
@@ -94,7 +85,18 @@ def heatmap_app():
 
         origins = ["All Origins"] + sorted(data["OriginZip"].dropna().unique())
 
-        selected_origin = st.selectbox("Filter by Origin", origins)
+        with st.form("origin_filter_form"):
+            selected_origin = st.selectbox("Filter by Origin", origins)
+            apply_filter = st.form_submit_button("Apply Filter")
+
+        # Only update after submit
+        if "selected_origin" not in st.session_state:
+            st.session_state["selected_origin"] = "All Origins"
+
+        if apply_filter:
+            st.session_state["selected_origin"] = selected_origin
+
+        selected_origin = st.session_state["selected_origin"]
 
         if selected_origin == "All Origins":
             filtered_data = data
@@ -115,7 +117,6 @@ def heatmap_app():
 
             # Load geospatial data
             zip3_shapes = load_zip3_shapes()
-            states = load_states()
 
             progress.progress(20)
 
@@ -142,18 +143,6 @@ def heatmap_app():
 
             # Create map
             m = fm.Map(location=[39.5, -98.35], zoom_start=4)
-
-            # Optional state overlay
-            if states is not None:
-                fm.GeoJson(
-                    states,
-                    name="States",
-                    style_function=lambda x: {
-                        "fillColor": "none",
-                        "color": "black",
-                        "weight": 1
-                    }
-                ).add_to(m)
 
             # Build heat data
             heat_data = []
