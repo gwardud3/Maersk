@@ -212,7 +212,7 @@ def warehouse_map_app():
         st.subheader("📍 Closest Warehouses")
 
         result_df = (
-            nearest[["warehouse", "distance_miles"]]
+            nearest[["building name", "distance_miles"]]
             .assign(distance_miles=lambda d: d["distance_miles"].round(1))
             .rename(columns={"distance_miles": "Distance (miles)"})
             .reset_index(drop=True)
