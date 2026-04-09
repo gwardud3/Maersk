@@ -34,12 +34,12 @@ def haversine_miles(lat1, lon1, lat2, lon2):
 # ---------------- Load warehouses ----------------
 @st.cache_data
 def load_warehouses():
-    df = pd.read_excel(resource_path("MaerskWarehouses.xlsx"))
+    df = pd.read_excel(resource_path("Warehouse & Sorting Locations.xlsx"))
 
     # Normalize column names
     df.columns = df.columns.str.strip().str.lower()
 
-    required_cols = {"warehouse", "lat", "long"}
+    required_cols = {"Building Name", "lat", "long"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
             f"Warehouse file must contain columns: {required_cols}"
