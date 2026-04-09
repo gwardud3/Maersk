@@ -49,7 +49,7 @@ def load_warehouses():
 
     gdf = gpd.GeoDataFrame(
         df,
-        geometry=gpd.points_from_xy(df["long"], df["lat"]),
+        geometry=gpd.points_from_xy(df["lon"], df["lat"]),
         crs="EPSG:4326"
     )
 
