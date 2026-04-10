@@ -119,30 +119,30 @@ def process_data(origin_list, customer_name):
     return fig, expanded_df
 
 
-def process_export_data(origin_list):
+def process_export_data(origin_list_3):
+
     excel_path = resource_path("Maersk Zones.xlsx")
     df = pd.read_excel(excel_path)
 
     df["OriginZip"] = df["Set_ID"].astype(str).str.zfill(3)
-    df["DestZipMin"] = df["Min_Zip_Int"].astype(int)
-    df["DestZipMax"] = df["Max_Zip_Int"].astype(int)
+    df["DestZip3Min"] = df["Min_Zip_Int"].astype(int)
+    df["DestZip3Max"] = df["Max_Zip_Int"].astype(int)
     df["Zone"] = df["Zone"].astype(int)
 
     # Filter to selected origins
-    df = df[df["OriginZip"].isin(origin_list)].copy()
+    df = df[df["OriginZip"].isin(origin_list_3)].copy()
 
-    # Expand FULL ZIP5 ranges
-    df["DestZipRange"] = df.apply(
-        lambda r: range(r["DestZipMin"], r["DestZipMax"] + 1),
+    # Expand ZIP3 ranges ONLY
+    df["zip3_range"] = df.apply(
+        lambda r: range(r["DestZip3Min"], r["DestZip3Max"] + 1),
         axis=1
     )
 
-    df = df.explode("DestZipRange")
+    df = df.explode("zip3_range")
 
-    # Convert to ZIP5
-    df["zip5"] = df["DestZipRange"].astype(str).str.zfill(5)
+    df["zip3"] = df["zip3_range"].astype(str).str.zfill(3)
 
-    return df[["zip5", "OriginZip", "Zone"]]
+    return df[["zip3", "OriginZip", "Zone"]]
 # ---------------- Streamlit Feature Entry Point ----------------
 def zone_map_app():
     st.header("📦 Zone Map Generator")
@@ -193,9 +193,7 @@ def zone_map_app():
         # 🧠 BUILD MATRIX (ZIP5 x ORIGIN)
         # ================================
         
-        pivot_df = export_df.groupby(["zip5", "OriginZip"])["Zone"] \
-            .min() \
-            .unstack()
+        pivot_df = export_df.groupby(["zip3", "OriginZip"])["Zone"].min().unstack()
         
         # Ensure all origins exist
         for origin in origin_list_3:
@@ -270,17 +268,18 @@ def zone_map_app():
         # ================================
         # ✍️ WRITE DATA (DO NOT TOUCH COL A)
         # ================================
-        
         for r_idx, zip5 in template_rows:
         
-            if zip5 in pivot_df.index:
-                row_data = pivot_df.loc[zip5]
+            zip3 = zip5[:3]
+        
+            if zip3 in pivot_df.index:
+                row_data = pivot_df.loc[zip3]
         
                 for c_idx, origin5 in enumerate(origin_list_5, start=origin_start_col):
-
-                    # Convert 5-digit ZIP → 3-digit
+        
                     origin3 = origin5[:3]
                     value = row_data.get(origin3)
+        
                     ws.cell(row=r_idx, column=c_idx, value=value)
         
         # ================================
