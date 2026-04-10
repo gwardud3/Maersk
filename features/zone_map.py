@@ -121,20 +121,18 @@ def process_data(origin_list, customer_name):
 
 
 def process_export_data(origin_list):
-    # Load Excel
     excel_path = resource_path("Maersk Zones.xlsx")
     df = pd.read_excel(excel_path)
 
-    # Clean columns
     df["OriginZip"] = df["Set_ID"].astype(str).str.zfill(3)
     df["DestZipMin"] = df["Min_Zip_Int"].astype(int)
     df["DestZipMax"] = df["Max_Zip_Int"].astype(int)
     df["Zone"] = df["Zone"].astype(int)
 
-    # Filter only selected origins
+    # Filter to selected origins
     df = df[df["OriginZip"].isin(origin_list)].copy()
 
-    # Expand ZIP ranges → 1:1 mapping
+    # Expand FULL ZIP5 ranges
     df["DestZipRange"] = df.apply(
         lambda r: range(r["DestZipMin"], r["DestZipMax"] + 1),
         axis=1
@@ -142,13 +140,10 @@ def process_export_data(origin_list):
 
     df = df.explode("DestZipRange")
 
-    # Convert to ZIP3
-    df["zip3"] = df["DestZipRange"].astype(str).str.zfill(3)
+    # Convert to ZIP5
+    df["zip5"] = df["DestZipRange"].astype(str).str.zfill(5)
 
-    # Keep only what we need
-    df = df[["zip3", "OriginZip", "Zone"]]
-
-    return df
+    return df[["zip5", "OriginZip", "Zone"]]
 # ---------------- Streamlit Feature Entry Point ----------------
 def zone_map_app():
     st.header("📦 Zone Map Generator")
@@ -178,56 +173,51 @@ def zone_map_app():
 
         st.pyplot(fig)
 
-        # ================================
-        # 📥 EXPORT USING TEMPLATE (MATRIX FORMAT)
+       # ================================
+        # 📥 EXPORT USING TEMPLATE (FIXED)
         # ================================
         
         export_df = process_export_data(origin_list)
+        
         template_path = resource_path("assets/ZoningTemplate.xlsx")
-        
         wb = load_workbook(template_path)
-        ws = wb.active  # or specify sheet
+        ws = wb.active
         
         # ================================
-        # 🧠 BUILD MATRIX (ZIP3 x ORIGIN)
+        # 🧠 BUILD MATRIX (ZIP5 x ORIGIN)
         # ================================
         
-        # Pivot: rows = zip3, columns = OriginZip, values = Zone
-        pivot_df = export_df.pivot_table(
-            index="zip3",
-            columns="OriginZip",
-            values="Zone",
-            aggfunc="first"
-        ).reset_index()
+        pivot_df = export_df.groupby(["zip5", "OriginZip"])["Zone"] \
+            .min() \
+            .unstack()
         
-        # Ensure ALL user-selected origins appear as columns
+        # Ensure all origins exist
         for origin in origin_list:
             if origin not in pivot_df.columns:
                 pivot_df[origin] = None
         
-        # Reorder columns: zip3 first, then origins in user order
-        pivot_df = pivot_df[["zip3"] + origin_list]
+        # ================================
+        # TEMPLATE STRUCTURE
+        # ================================
+        
+        header_row = 4
+        data_start_row = 5
+        origin_start_col = 2  # Column B
         
         # ================================
         # 🎨 COPY TEMPLATE FORMATTING
         # ================================
         
         def copy_column_format(ws, source_col, target_col):
-            for row in range(4, data_start_row + len(pivot_df) + 5):
+            for row in range(header_row, data_start_row + 5000):  # safe range
                 source_cell = ws.cell(row=row, column=source_col)
                 target_cell = ws.cell(row=row, column=target_col)
         
                 if source_cell.has_style:
                     target_cell._style = copy(source_cell._style)
         
-        # Template starts:
-        header_row = 4
-        data_start_row = 5
-        origin_start_col = 2  # Column B
-        
         existing_origin_cols = ws.max_column - (origin_start_col - 1)
         
-        # Expand formatting if needed
         if len(origin_list) > existing_origin_cols:
             for i in range(existing_origin_cols, len(origin_list)):
                 source_col = origin_start_col + existing_origin_cols - 1
@@ -235,34 +225,49 @@ def zone_map_app():
                 copy_column_format(ws, source_col, target_col)
         
         # ================================
-        # 🧹 CLEAR OLD DATA
+        # 🧹 CLEAR OLD DATA (ONLY B+)
         # ================================
         
-        for row in ws.iter_rows(min_row=data_start_row, max_row=ws.max_row):
+        for row in ws.iter_rows(min_row=data_start_row, max_row=ws.max_row, min_col=origin_start_col):
             for cell in row:
                 cell.value = None
+        
+        # ================================
+        # 🧹 CLEAR OLD HEADERS
+        # ================================
+        
+        for col in range(origin_start_col, ws.max_column + 1):
+            ws.cell(row=header_row, column=col).value = None
         
         # ================================
         # ✍️ WRITE HEADERS (ROW 4)
         # ================================
         
-        # Column A header stays as-is
-        
         for col_idx, origin in enumerate(origin_list, start=origin_start_col):
             ws.cell(row=header_row, column=col_idx, value=origin)
         
         # ================================
-        # ✍️ WRITE DATA (ROW 5+)
+        # 📍 MATCH TEMPLATE ZIP5 ROWS
         # ================================
         
-        for r_idx, row in enumerate(pivot_df.itertuples(index=False), start=data_start_row):
-            
-            # Column A = zip3
-            ws.cell(row=r_idx, column=1, value=row[0])
+        template_zip5s = [
+            str(ws.cell(row=r, column=1).value).zfill(5)
+            for r in range(data_start_row, ws.max_row + 1)
+        ]
         
-            # Columns B+ = zones
-            for c_idx, value in enumerate(row[1:], start=origin_start_col):
-                ws.cell(row=r_idx, column=c_idx, value=value)
+        # ================================
+        # ✍️ WRITE DATA (DO NOT TOUCH COL A)
+        # ================================
+        
+        for r_idx, zip5 in enumerate(template_zip5s, start=data_start_row):
+        
+            if zip5 in pivot_df.index:
+                row_data = pivot_df.loc[zip5]
+        
+                for c_idx, origin in enumerate(origin_list, start=origin_start_col):
+                    value = row_data.get(origin)
+        
+                    ws.cell(row=r_idx, column=c_idx, value=value)
         
         # ================================
         # 💾 SAVE FOR DOWNLOAD
@@ -277,4 +282,3 @@ def zone_map_app():
             data=output,
             file_name=f"{customer_name}_zoning_table.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
