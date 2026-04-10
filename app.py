@@ -1,6 +1,6 @@
 import streamlit as st
 
-#from features.zone_map import zone_map_app
+from features.zone_map import zone_map_app
 from features.warehouse_map import warehouse_map_app
 from features.warehouse_sort import warehouse_sort_app
 from features.heatmap import heatmap_app
