@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 import os
 from openpyxl import load_workbook
 from io import BytesIO
+from copy import copy
 
 # ---------------- Resource path (repo-root safe) ----------------
 def resource_path(relative_path: str) -> str:
@@ -57,13 +58,7 @@ def process_data(origin_list, customer_name):
     min_zones = expanded_df.groupby("zip3")["Zone"].min().reset_index()
     min_zone_df = expanded_df.merge(min_zones, on=["zip3", "Zone"])
 
-    expanded_df = (
-        min_zone_df
-        .groupby(["zip3", "Zone"])["OriginZip"]
-        .agg(lambda x: ", ".join(sorted(set(x))))
-        .reset_index()
-        .rename(columns={"OriginZip": "OriginWithMinZone"})
-    )
+    expanded_df = min_zone_df.copy()
 
     # Step 3: Load ZIP3 shapes
     progress_text.info("Loading ZIP3 map shapes...")
@@ -158,10 +153,6 @@ def zone_map_app():
         # 📥 EXPORT USING TEMPLATE (MATRIX FORMAT)
         # ================================
         
-        from openpyxl import load_workbook
-        from io import BytesIO
-        from copy import copy
-        
         template_path = resource_path("assets/4.9.2026 Zoning Table.xlsx")
         
         wb = load_workbook(template_path)
@@ -192,7 +183,7 @@ def zone_map_app():
         # ================================
         
         def copy_column_format(ws, source_col, target_col):
-            for row in range(4, ws.max_row + 1):  # start at header row
+            for row in range(4, data_start_row + len(pivot_df) + 5):
                 source_cell = ws.cell(row=row, column=source_col)
                 target_cell = ws.cell(row=row, column=target_col)
         
