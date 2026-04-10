@@ -294,7 +294,7 @@ def zone_map_app():
                 if col_idx == source_col:
                     continue  # skip column B itself
 
-    copy_column_format(ws, source_col, col_idx)
+        copy_column_format(ws, source_col, col_idx)
         
         # ================================
         # 💾 SAVE FOR DOWNLOAD
