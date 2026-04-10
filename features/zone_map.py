@@ -213,7 +213,7 @@ def zone_map_app():
         # ================================
         
         def copy_column_format(ws, source_col, target_col):
-            for row in range(header_row, data_start_row + 5000):  # safe range
+            for row in range(header_row, data_start_row + 1):  # safe range
                 source_cell = ws.cell(row=row, column=source_col)
                 target_cell = ws.cell(row=row, column=target_col)
         
@@ -268,6 +268,8 @@ def zone_map_app():
         # ================================
         # ✍️ WRITE DATA (DO NOT TOUCH COL A)
         # ================================
+        columns_with_data = set()
+
         for r_idx, zip5 in template_rows:
         
             zip3 = zip5[:3]
@@ -280,7 +282,17 @@ def zone_map_app():
                     origin3 = origin5[:3]
                     value = row_data.get(origin3)
         
-                    ws.cell(row=r_idx, column=c_idx, value=value)
+                    if pd.notna(value):
+                        ws.cell(row=r_idx, column=c_idx, value=value)
+                        columns_with_data.add(c_idx)
+                        
+            source_col = origin_start_col  # Column B
+            
+            for col_idx in columns_with_data:
+                if col_idx == source_col:
+                    continue  # skip column B itself
+
+    copy_column_format(ws, source_col, col_idx)
         
         # ================================
         # 💾 SAVE FOR DOWNLOAD
