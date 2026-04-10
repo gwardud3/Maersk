@@ -149,19 +149,26 @@ def zone_map_app():
     st.header("📦 Zone Map Generator")
 
     origin_input = st.text_input(
-        "Enter 3-Digit Origin ZIPs (comma separated)"
+        "Enter 5-Digit Origin ZIPs (comma separated)"
     )
     customer_name = st.text_input("Customer Name")
 
     if st.button("Generate Map"):
-        origin_list = [
-            o.strip().zfill(3)
+        # Step 1: Clean raw input
+        raw_origins = [
+            o.strip()
             for o in origin_input.split(",")
-            if o.strip().isdigit() and len(o.strip()) <= 3
+            if o.strip().isdigit()
         ]
 
-        if not origin_list:
-            st.error("Please enter at least one valid 3-digit Origin ZIP.")
+        # Step 2: Store full 5-digit ZIPs (for Excel headers)
+        origin_list_5 = [o.zfill(5) for o in raw_origins]
+        
+        # Step 3: Convert to 3-digit ZIPs (for processing)
+        origin_list_3 = [o[:3] for o in origin_list_5]
+
+        if not origin_list_5:
+            st.error("Please enter at least one valid 5-digit Origin ZIP.")
             return
 
         if not customer_name:
@@ -169,7 +176,7 @@ def zone_map_app():
             return
 
         with st.spinner("Processing… this may take a moment"):
-            fig, expanded_df = process_data(origin_list, customer_name)
+            fig, expanded_df = process_data(origin_list_3, customer_name)
 
         st.pyplot(fig)
 
@@ -177,7 +184,7 @@ def zone_map_app():
         # 📥 EXPORT USING TEMPLATE (FIXED)
         # ================================
         
-        export_df = process_export_data(origin_list)
+        export_df = process_export_data(origin_list_3)
         
         template_path = resource_path("assets/ZoningTemplate.xlsx")
         wb = load_workbook(template_path)
@@ -192,7 +199,7 @@ def zone_map_app():
             .unstack()
         
         # Ensure all origins exist
-        for origin in origin_list:
+        for origin in origin_list_3:
             if origin not in pivot_df.columns:
                 pivot_df[origin] = None
         
@@ -218,8 +225,8 @@ def zone_map_app():
         
         existing_origin_cols = ws.max_column - (origin_start_col - 1)
         
-        if len(origin_list) > existing_origin_cols:
-            for i in range(existing_origin_cols, len(origin_list)):
+        if len(origin_list_5) > existing_origin_cols:
+            for i in range(existing_origin_cols, len(origin_list_5)):
                 source_col = origin_start_col + existing_origin_cols - 1
                 target_col = origin_start_col + i
                 copy_column_format(ws, source_col, target_col)
@@ -243,36 +250,44 @@ def zone_map_app():
         # ✍️ WRITE HEADERS (ROW 4)
         # ================================
         
-        for col_idx, origin in enumerate(origin_list, start=origin_start_col):
+        for col_idx, origin in enumerate(origin_list_5, start=origin_start_col):
             ws.cell(row=header_row, column=col_idx, value=origin)
         
         # ================================
         # 📍 MATCH TEMPLATE ZIP5 ROWS
         # ================================
         
-        template_zip5s = [
-            str(ws.cell(row=r, column=1).value).zfill(5)
-            for r in range(data_start_row, ws.max_row + 1)
-        ]
+        template_rows = []
         
+        for r in range(data_start_row, ws.max_row + 1):
+            val = ws.cell(row=r, column=1).value
+        
+            if val is None or str(val).strip() == "":
+                break  # stop at end of template
+        
+            zip5 = str(val).strip().zfill(5)
+            template_rows.append((r, zip5))
+                
         # ================================
         # ✍️ WRITE DATA (DO NOT TOUCH COL A)
         # ================================
         
-        for r_idx, zip5 in enumerate(template_zip5s, start=data_start_row):
+        for r_idx, zip5 in template_rows:
         
             if zip5 in pivot_df.index:
                 row_data = pivot_df.loc[zip5]
         
-                for c_idx, origin in enumerate(origin_list, start=origin_start_col):
-                    value = row_data.get(origin)
-        
+                for c_idx, origin5 in enumerate(origin_list_5, start=origin_start_col):
+
+                    # Convert 5-digit ZIP → 3-digit
+                    origin3 = origin5[:3]
+                    value = row_data.get(origin3)
                     ws.cell(row=r_idx, column=c_idx, value=value)
         
         # ================================
         # 💾 SAVE FOR DOWNLOAD
         # ================================
-        
+        ws.freeze_panes = "A5"
         output = BytesIO()
         wb.save(output)
         output.seek(0)
