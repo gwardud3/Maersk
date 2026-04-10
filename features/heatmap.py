@@ -56,8 +56,93 @@ def load_heatmap_data():
         data["DestZip"] = data["DestZip"].astype(str).str.zfill(5)
         data["Dest3"] = data["DestZip"].str[:3]
 
-        st.success("File uploaded successfully ✅")
-        st.dataframe(data.head())
+        st.subheader("📊 Data Summary")
+        
+        # ================================
+        # 🧮 PREP DATA
+        # ================================
+        
+        # Ensure proper formatting
+        if "OriginZip" in data.columns:
+            data["OriginZip"] = data["OriginZip"].astype(str).str.zfill(5)
+        
+        # Create DIM if possible
+        if all(col in data.columns for col in ["Length", "Width", "Height"]):
+            if "DIM" not in data.columns:
+                data["DIM"] = data["Length"] * data["Width"] * data["Height"]
+        
+        # ================================
+        # 📊 KPI METRICS
+        # ================================
+        
+        col1, col2, col3 = st.columns(3)
+        
+        # Total Volume
+        total_volume = data["Volume"].sum()
+        col1.metric("Total Volume", f"{total_volume:,.0f}")
+        
+        # Average Weight
+        if "Weight" in data.columns:
+            avg_weight = data["Weight"].mean()
+            col2.metric("Avg Weight", f"{avg_weight:,.2f}")
+        else:
+            col2.metric("Avg Weight", "N/A")
+        
+        # Average DIM
+        if "DIM" in data.columns:
+            avg_dim = data["DIM"].mean()
+            col3.metric("Avg DIM", f"{avg_dim:,.2f}")
+        else:
+            col3.metric("Avg DIM", "N/A")
+        
+        # ================================
+        # 📦 VOLUME BY ORIGIN
+        # ================================
+        
+        if "OriginZip" in data.columns:
+        
+            vol_by_origin = (
+                data.groupby("OriginZip")["Volume"]
+                .sum()
+                .reset_index()
+                .sort_values(by="Volume", ascending=False)
+            )
+        
+            st.markdown("### 📍 Volume by Origin")
+        
+            # Slider for Top N
+            top_n = st.slider("Show Top N Origins", 5, 50, 10)
+        
+            st.dataframe(vol_by_origin.head(top_n), use_container_width=True)
+        
+            # ================================
+            # 📊 BAR CHART
+            # ================================
+            st.markdown("### 📊 Top Origins Chart")
+        
+            chart_data = vol_by_origin.head(top_n).set_index("OriginZip")
+        
+            st.bar_chart(chart_data)
+        
+            # ================================
+            # 🔥 TOP % FILTER
+            # ================================
+            st.markdown("### 🔥 High-Impact Origins")
+        
+            percent_threshold = st.slider(
+                "Show Origins Contributing to Top % of Volume",
+                50, 100, 80
+            )
+        
+            vol_by_origin["cum_pct"] = (
+                vol_by_origin["Volume"].cumsum() / total_volume * 100
+            )
+        
+            top_pct_df = vol_by_origin[
+                vol_by_origin["cum_pct"] <= percent_threshold
+            ]
+        
+            st.dataframe(top_pct_df, use_container_width=True)
 
         return data
 
