@@ -153,7 +153,7 @@ def zone_map_app():
         # 📥 EXPORT USING TEMPLATE (MATRIX FORMAT)
         # ================================
         
-        template_path = resource_path("assets/4.9.2026 Zoning Table.xlsx")
+        template_path = resource_path("assets/ZoningTemplate.xlsx")
         
         wb = load_workbook(template_path)
         ws = wb.active  # or specify sheet
