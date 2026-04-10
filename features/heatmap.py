@@ -171,8 +171,8 @@ def heatmap_app():
             # Add heatmap layer
             HeatMap(
                 heat_data,
-                radius=10,
-                blur=4,
+                radius=20,
+                blur=8,
                 min_opacity=0.2,
                 gradient={
                     0.2: "blue",
