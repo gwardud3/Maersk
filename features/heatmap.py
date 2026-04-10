@@ -96,7 +96,7 @@ def load_heatmap_data():
             col3.metric("Avg DIM", "N/A")
         
         # ================================
-        # 📦 VOLUME BY ORIGIN
+        # 📦 VOLUME BY ORIGIN (TOP 5 + OTHER)
         # ================================
         
         if "OriginZip" in data.columns:
@@ -108,41 +108,40 @@ def load_heatmap_data():
                 .sort_values(by="Volume", ascending=False)
             )
         
-            st.markdown("### 📍 Volume by Origin")
+            total_volume = vol_by_origin["Volume"].sum()
         
-            # Slider for Top N
-            top_n = st.slider("Show Top N Origins", 5, 50, 10)
+            # Top 5
+            top5 = vol_by_origin.head(5).copy()
         
-            st.dataframe(vol_by_origin.head(top_n), use_container_width=True)
+            # Remaining = "Other"
+            if len(vol_by_origin) > 5:
+                other_volume = vol_by_origin.iloc[5:]["Volume"].sum()
         
-            # ================================
-            # 📊 BAR CHART
-            # ================================
-            st.markdown("### 📊 Top Origins Chart")
+                other_row = pd.DataFrame({
+                    "OriginZip": ["Other"],
+                    "Volume": [other_volume]
+                })
         
-            chart_data = vol_by_origin.head(top_n).set_index("OriginZip")
+                final_df = pd.concat([top5, other_row], ignore_index=True)
+            else:
+                final_df = top5
+
+            # Sort so "Other" stays at bottom naturally
+            final_df = final_df.sort_values(
+                by="Volume",
+                ascending=False
+            ).reset_index(drop=True)
+            
+            # Calculate %
+            final_df["Volume %"] = (final_df["Volume"] / total_volume) * 100
         
-            st.bar_chart(chart_data)
+            # Format
+            final_df["Volume %"] = final_df["Volume %"].map(lambda x: f"{x:.1f}%")
+            final_df["Volume"] = final_df["Volume"].map(lambda x: f"{x:,.0f}")
         
-            # ================================
-            # 🔥 TOP % FILTER
-            # ================================
-            st.markdown("### 🔥 High-Impact Origins")
-        
-            percent_threshold = st.slider(
-                "Show Origins Contributing to Top % of Volume",
-                50, 100, 80
-            )
-        
-            vol_by_origin["cum_pct"] = (
-                vol_by_origin["Volume"].cumsum() / total_volume * 100
-            )
-        
-            top_pct_df = vol_by_origin[
-                vol_by_origin["cum_pct"] <= percent_threshold
-            ]
-        
-            st.dataframe(top_pct_df, use_container_width=True)
+            # Display
+            st.markdown("### 📍 Volume by Origin (Top 5 + Other)")
+            st.dataframe(final_df, use_container_width=True)
 
         return data
 
