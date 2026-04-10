@@ -7,10 +7,6 @@ import folium as fm
 import numpy as np
 import branca.colormap as cm
 
-colormap = cm.linear.YlOrRd_09.scale(
-    gdf["log_volume"].min(),
-    gdf["log_volume"].max()
-)
 
 def style_function(feature):
     zip3 = feature["properties"]["ZIP3"]
@@ -176,7 +172,6 @@ def heatmap_app():
             )
     
             # Create colormap
-            import branca.colormap as cm
             colormap = cm.linear.YlOrRd_09.scale(
                 gdf["log_volume"].min(skipna=True),
                 gdf["log_volume"].max(skipna=True)
