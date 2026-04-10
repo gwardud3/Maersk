@@ -5,8 +5,34 @@ import streamlit as st
 import pandas as pd
 import folium as fm
 import numpy as np
+import branca.colormap as cm
 
+colormap = cm.linear.YlOrRd_09.scale(
+    gdf["log_volume"].min(),
+    gdf["log_volume"].max()
+)
 
+def style_function(feature):
+    zip3 = feature["properties"]["ZIP3"]
+    
+    row = gdf[gdf["ZIP3"] == zip3]
+
+    if row.empty or pd.isna(row["log_volume"].values[0]):
+        return {
+            "fillColor": "lightgray",   # 👈 missing data
+            "color": "black",
+            "weight": 0.2,
+            "fillOpacity": 0.4
+        }
+
+    val = row["log_volume"].values[0]
+
+    return {
+        "fillColor": colormap(val),
+        "color": "black",
+        "weight": 0.2,
+        "fillOpacity": 0.7
+    }
 # ================================
 # 📂 LOAD GEOSPATIAL FILES (CACHED)
 # ================================
@@ -110,95 +136,98 @@ def heatmap_app():
     # HEATMAP BUTTON
     # ================================
     if st.button("Generate Heatmap"):
-
+    
         with st.spinner("Building heatmap..."):
-
+    
             progress = st.progress(0)
-
+    
             # Load geospatial data
             zip3_shapes = load_zip3_shapes()
-
             progress.progress(20)
-
+    
             # Aggregate to ZIP3
             agg = (
                 filtered_data.groupby("Dest3", as_index=False)["Volume"]
                 .sum()
             )
-
             progress.progress(40)
-
-            # Merge with geometry
+    
+            # Merge (KEEP ALL SHAPES)
             gdf = pd.merge(
-                agg,
                 zip3_shapes,
-                left_on="Dest3",
-                right_on="ZIP3",
+                agg,
+                left_on="ZIP3",
+                right_on="Dest3",
                 how="left"
             )
-
-            gdf = gdf.dropna(subset=["GEOMETRY"])
-
+    
+            # Clean geometries
+            gdf = gdf[
+                gdf["GEOMETRY"].notna() &
+                (~gdf["GEOMETRY"].is_empty) &
+                (gdf["GEOMETRY"].is_valid)
+            ]
+    
             progress.progress(60)
-            
-            gdf["log_volume"] = gdf["Volume"].apply(lambda v: np.log10(max(v, 1)))
+    
+            # Log transform (keep NaN for missing ZIPs)
+            gdf["log_volume"] = gdf["Volume"].apply(
+                lambda v: np.log10(v) if pd.notnull(v) and v > 0 else None
+            )
+    
+            # Create colormap
+            import branca.colormap as cm
+            colormap = cm.linear.YlOrRd_09.scale(
+                gdf["log_volume"].min(skipna=True),
+                gdf["log_volume"].max(skipna=True)
+            )
+    
+            # Faster lookup dict
+            zip_to_val = dict(zip(gdf["ZIP3"], gdf["log_volume"]))
+    
+            # Style function
+            def style_function(feature):
+                zip3 = feature["properties"]["ZIP3"]
+                val = zip_to_val.get(zip3)
+    
+                if val is None or pd.isna(val):
+                    return {
+                        "fillColor": "lightgray",
+                        "color": "black",
+                        "weight": 0.2,
+                        "fillOpacity": 0.4
+                    }
+    
+                return {
+                    "fillColor": colormap(val),
+                    "color": "black",
+                    "weight": 0.2,
+                    "fillOpacity": 0.7
+                }
+    
             # Create map
             m = fm.Map(location=[39.5, -98.35], zoom_start=4)
-
-            # Normalize (0–1 scale)
-            min_val = gdf["log_volume"].min()
-            max_val = gdf["log_volume"].max()
-            
-            gdf["log_volume_norm"] = (gdf["log_volume"] - min_val) / (max_val - min_val)
-            
-            # Build heat data
-            heat_data = []
-            
-            for _, row in gdf.iterrows():
-                geom = row["GEOMETRY"]
-            
-                if geom is not None and geom.is_valid:
-                    centroid = geom.centroid
-            
-                    heat_data.append([
-                        centroid.y,
-                        centroid.x,
-                        row["log_volume_norm"]
-                    ])
-
-            progress.progress(80)
-
-            # Add heatmap layer
-            fm.Choropleth(
-                geo_data=gdf,
-                data=gdf,
-                columns=["ZIP3", "log_volume_norm"],
-                key_on="feature.properties.ZIP3",
-                fill_color="YlOrRd",
-                fill_opacity=0.7,
-                line_opacity=0.2,
-                legend_name="Log Scaled Volume (ZIP3)"
-            ).add_to(m)
-
+    
+            # Add polygons
             fm.GeoJson(
                 gdf,
-                style_function=lambda x: {
-                    "fillColor": "transparent",
-                    "color": "black",
-                    "weight": 0.3
-                },
+                style_function=style_function,
                 tooltip=fm.GeoJsonTooltip(
                     fields=["ZIP3", "Volume"],
                     aliases=["ZIP3:", "Total Volume:"],
                     localize=True
                 )
             ).add_to(m)
-
+    
+            # Add legend
+            colormap.caption = "Log Scaled Volume (ZIP3)"
+            colormap.add_to(m)
+    
             progress.progress(100)
-
-            # Save HTML to session
+    
+            # Save HTML
             st.session_state["heatmap_html"] = m.get_root().render()
-
+    
         st.success("Heatmap ready!")
 
     # ================================
