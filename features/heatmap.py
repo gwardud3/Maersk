@@ -140,26 +140,30 @@ def heatmap_app():
             gdf = gdf.dropna(subset=["GEOMETRY"])
 
             progress.progress(60)
-
+            
+            gdf["log_volume"] = gdf["Volume"].apply(lambda v: np.log10(max(v, 1)))
             # Create map
             m = fm.Map(location=[39.5, -98.35], zoom_start=4)
 
+            # Normalize (0–1 scale)
+            min_val = gdf["log_volume"].min()
+            max_val = gdf["log_volume"].max()
+            
+            gdf["log_volume_norm"] = (gdf["log_volume"] - min_val) / (max_val - min_val)
+            
             # Build heat data
             heat_data = []
-
+            
             for _, row in gdf.iterrows():
                 geom = row["GEOMETRY"]
-
+            
                 if geom is not None and geom.is_valid:
                     centroid = geom.centroid
-
-                    # Avoid log(0)
-                    volume = max(row["Volume"], 1)
-
+            
                     heat_data.append([
                         centroid.y,
                         centroid.x,
-                        np.log(volume)
+                        row["log_volume_norm"]
                     ])
 
             progress.progress(80)
@@ -167,9 +171,9 @@ def heatmap_app():
             # Add heatmap layer
             HeatMap(
                 heat_data,
-                radius=7,
-                blur=2,
-                min_opacity=0.1,
+                radius=10,
+                blur=4,
+                min_opacity=0.2,
                 gradient={
                     0.2: "blue",
                     0.4: "cyan",
