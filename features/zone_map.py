@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.patches as mpatches
 import os
+from openpyxl import load_workbook
+from io import BytesIO
 
 # ---------------- Resource path (repo-root safe) ----------------
 def resource_path(relative_path: str) -> str:
@@ -152,11 +154,106 @@ def zone_map_app():
 
         st.pyplot(fig)
 
-        csv = expanded_df.to_csv(index=False).encode("utf-8")
+        # ================================
+        # 📥 EXPORT USING TEMPLATE (MATRIX FORMAT)
+        # ================================
+        
+        from openpyxl import load_workbook
+        from io import BytesIO
+        from copy import copy
+        
+        template_path = resource_path("assets/4.9.2026 Zoning Table.xlsx")
+        
+        wb = load_workbook(template_path)
+        ws = wb.active  # or specify sheet
+        
+        # ================================
+        # 🧠 BUILD MATRIX (ZIP3 x ORIGIN)
+        # ================================
+        
+        # Pivot: rows = zip3, columns = OriginZip, values = Zone
+        pivot_df = expanded_df.pivot_table(
+            index="zip3",
+            columns="OriginZip",
+            values="Zone",
+            aggfunc="first"
+        ).reset_index()
+        
+        # Ensure ALL user-selected origins appear as columns
+        for origin in origin_list:
+            if origin not in pivot_df.columns:
+                pivot_df[origin] = None
+        
+        # Reorder columns: zip3 first, then origins in user order
+        pivot_df = pivot_df[["zip3"] + origin_list]
+        
+        # ================================
+        # 🎨 COPY TEMPLATE FORMATTING
+        # ================================
+        
+        def copy_column_format(ws, source_col, target_col):
+            for row in range(4, ws.max_row + 1):  # start at header row
+                source_cell = ws.cell(row=row, column=source_col)
+                target_cell = ws.cell(row=row, column=target_col)
+        
+                if source_cell.has_style:
+                    target_cell._style = copy(source_cell._style)
+        
+        # Template starts:
+        header_row = 4
+        data_start_row = 5
+        origin_start_col = 2  # Column B
+        
+        existing_origin_cols = ws.max_column - (origin_start_col - 1)
+        
+        # Expand formatting if needed
+        if len(origin_list) > existing_origin_cols:
+            for i in range(existing_origin_cols, len(origin_list)):
+                source_col = origin_start_col + existing_origin_cols - 1
+                target_col = origin_start_col + i
+                copy_column_format(ws, source_col, target_col)
+        
+        # ================================
+        # 🧹 CLEAR OLD DATA
+        # ================================
+        
+        for row in ws.iter_rows(min_row=data_start_row, max_row=ws.max_row):
+            for cell in row:
+                cell.value = None
+        
+        # ================================
+        # ✍️ WRITE HEADERS (ROW 4)
+        # ================================
+        
+        # Column A header stays as-is
+        
+        for col_idx, origin in enumerate(origin_list, start=origin_start_col):
+            ws.cell(row=header_row, column=col_idx, value=origin)
+        
+        # ================================
+        # ✍️ WRITE DATA (ROW 5+)
+        # ================================
+        
+        for r_idx, row in enumerate(pivot_df.itertuples(index=False), start=data_start_row):
+            
+            # Column A = zip3
+            ws.cell(row=r_idx, column=1, value=row[0])
+        
+            # Columns B+ = zones
+            for c_idx, value in enumerate(row[1:], start=origin_start_col):
+                ws.cell(row=r_idx, column=c_idx, value=value)
+        
+        # ================================
+        # 💾 SAVE FOR DOWNLOAD
+        # ================================
+        
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
         st.download_button(
-            label="📥 Download Zone Data CSV",
-            data=csv,
-            file_name="expanded_zone_data.csv",
-            mime="text/csv"
+            label="📥 Download Zoning Table (Template)",
+            data=output,
+            file_name=f"{customer_name}_zoning_table.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-
