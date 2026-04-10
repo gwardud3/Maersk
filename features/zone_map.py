@@ -213,7 +213,9 @@ def zone_map_app():
         # ================================
         
         def copy_column_format(ws, source_col, target_col):
-            for row in range(header_row, data_start_row + 1):  # safe range
+            max_row = ws.max_row
+
+            for row in range(header_row, max_row + 1):
                 source_cell = ws.cell(row=row, column=source_col)
                 target_cell = ws.cell(row=row, column=target_col)
         
