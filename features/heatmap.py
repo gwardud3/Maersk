@@ -169,18 +169,29 @@ def heatmap_app():
             progress.progress(80)
 
             # Add heatmap layer
-            HeatMap(
-                heat_data,
-                radius=10,
-                blur=4,
-                min_opacity=0.2,
-                gradient={
-                    0.2: "blue",
-                    0.4: "cyan",
-                    0.6: "lime",
-                    0.8: "yellow",
-                    1.0: "red"
-                }
+            fm.Choropleth(
+                geo_data=gdf,
+                data=gdf,
+                columns=["ZIP3", "log_volume_norm"],
+                key_on="feature.properties.ZIP3",
+                fill_color="YlOrRd",
+                fill_opacity=0.7,
+                line_opacity=0.2,
+                legend_name="Log Scaled Volume (ZIP3)"
+            ).add_to(m)
+
+            fm.GeoJson(
+                gdf,
+                style_function=lambda x: {
+                    "fillColor": "transparent",
+                    "color": "black",
+                    "weight": 0.3
+                },
+                tooltip=fm.GeoJsonTooltip(
+                    fields=["ZIP3", "Volume"],
+                    aliases=["ZIP3:", "Total Volume:"],
+                    localize=True
+                )
             ).add_to(m)
 
             progress.progress(100)
