@@ -64,7 +64,7 @@ def process_data(origin_list, customer_name):
     progress_text.info("Loading ZIP3 map shapes...")
     zip3_shapes = load_zip3_shapes()
 
-    expanded_df["zip3"] = expanded_df["zip3"].astype(str).str.zfill(3)
+    expanded_df["zip3"] = expanded_df["DestZipRange"].astype(str).str.zfill(5).str[:3]
     zip3_shapes = zip3_shapes.merge(expanded_df, on="zip3", how="left")
 
     # Step 4: Plot
