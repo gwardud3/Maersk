@@ -155,7 +155,7 @@ def load_heatmap_data():
 # ================================
 def heatmap_app():
 
-    st.header("Heatmap Tool 🗺️")
+    st.header("Data Summary and Heatmap Tool 🗺️")
 
     # Load user data
     data = load_heatmap_data()
@@ -255,9 +255,9 @@ def heatmap_app():
             # Add heatmap layer
             HeatMap(
                 heat_data,
-                radius=25,
+                radius=20,
                 blur=10,
-                min_opacity=0.25,
+                min_opacity=0.2,
                 gradient={
                     0.2: "blue",
                     0.4: "cyan",
