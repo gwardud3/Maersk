@@ -4,6 +4,7 @@ from features.zone_map import zone_map_app
 from features.warehouse_map import warehouse_map_app
 from features.warehouse_sort import warehouse_sort_app
 from features.heatmap import heatmap_app
+from features.downloadables import downloadables
 
 st.set_page_config(
     page_title="Pricing Tools",
@@ -14,7 +15,7 @@ st.title("📊 Pricing Team Tools (for Other Teams)")
 
 menu = st.sidebar.radio(
     "Select a Tool",
-    ["Zone Map", "Warehouse Map", "Warehouse Sort", "Heatmap"]
+    ["Zone Map", "Warehouse Map", "Warehouse Sort", "Heatmap", "Important Files"]
 )
 
 if menu == "Zone Map":
@@ -28,4 +29,7 @@ elif menu == "Warehouse Sort":
 
 elif menu == "Heatmap":
     heatmap_app()
+
+elif menu == "Important Files":
+    downloadables()
 
