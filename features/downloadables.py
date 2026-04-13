@@ -5,7 +5,7 @@ def downloadables():
 
     with open("assets/DAS-EDAS-2026LIST.xlsx", "rb") as f:
         st.download_button(
-            label="Download Excel File",
+            label="Download DAS/EDAS 2026 List",
             data=f,
             file_name="DAS-EDAS-2026LIST.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
