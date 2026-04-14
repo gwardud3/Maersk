@@ -41,7 +41,7 @@ def load_warehouses():
 
     #st.write(f"Warehouse file columns: {df.columns.tolist()}")
 
-    required_cols = {"building name", "lat", "lon"}
+    required_cols = {"building name", "zip", "lat", "lon"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
             f"Warehouse file must contain columns: {required_cols}"
@@ -212,7 +212,7 @@ def warehouse_map_app():
         st.subheader("📍 Closest Warehouses")
 
         result_df = (
-            nearest[["building name", "distance_miles"]]
+            nearest[["building name", "distance_miles", "zip"]]
             .assign(distance_miles=lambda d: d["distance_miles"].round(1))
             .rename(columns={"distance_miles": "Distance (miles)"})
             .reset_index(drop=True)
