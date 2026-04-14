@@ -172,7 +172,8 @@ def zone_map_app():
         # 🚫 If ANY invalid inputs → stop everything
         if invalid_inputs:
             st.error(
-                f"All ZIP codes must be 5 digits. Invalid entries: {', '.join(invalid_inputs)} \n HINT: if you don't know the full 5 digit ZIP, you can enter the first 3 digits followed by '00' (e.g. '12300' for ZIPs starting with 123)."
+                f"All ZIP codes must be 5 digits. Invalid entries: {', '.join(invalid_inputs)} \n" 
+                f"HINT: if you don't know the full 5 digit ZIP, you can enter the first 3 digits followed by '00' (e.g. '12300' for ZIPs starting with 123)."
             )
             return
 
