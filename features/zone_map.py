@@ -172,7 +172,7 @@ def zone_map_app():
         # 🚫 If ANY invalid inputs → stop everything
         if invalid_inputs:
             st.error(
-                f"All ZIP codes must be 5 digits. Invalid entries: {', '.join(invalid_inputs)} \n" 
+                f"All ZIP codes must be 5 digits. Invalid entries: {', '.join(invalid_inputs)} \n\n" 
                 f"HINT: if you don't know the full 5 digit ZIP, you can enter the first 3 digits followed by '00' (e.g. '12300' for ZIPs starting with 123)."
             )
             return
@@ -186,8 +186,7 @@ def zone_map_app():
             return
 
         if not customer_name:
-            st.error("Please enter a Customer Name.")
-            return
+            customer_name = "Maersk"
 
         with st.spinner("Processing… this may take a moment"):
             fig, expanded_df = process_data(origin_list_3, customer_name)
