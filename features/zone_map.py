@@ -159,11 +159,25 @@ def zone_map_app():
             for o in origin_input.split(",")
             if o.strip().isdigit()
         ]
-
-        # Step 2: Store full 5-digit ZIPs (for Excel headers)
-        origin_list_5 = [o.zfill(5) for o in raw_origins]
         
-        # Step 3: Convert to 3-digit ZIPs (for processing)
+        invalid_inputs = []
+        valid_origins = []
+
+        for o in raw_origins:
+            if o.isdigit() and len(o) == 5:
+                valid_origins.append(o)
+            else:
+                invalid_inputs.append(o)
+
+        # 🚫 If ANY invalid inputs → stop everything
+        if invalid_inputs:
+            st.error(
+                f"All ZIP codes must be 5 digits. Invalid entries: {', '.join(invalid_inputs)} \n HINT: if you don't know the full 5 digit ZIP, you can enter the first 3 digits followed by '00' (e.g. '12300' for ZIPs starting with 123)."
+            )
+            return
+
+        # ✅ Safe to proceed
+        origin_list_5 = [o.zfill(5) for o in valid_origins]
         origin_list_3 = [o[:3] for o in origin_list_5]
 
         if not origin_list_5:
