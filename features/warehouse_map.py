@@ -219,4 +219,5 @@ def warehouse_map_app():
         )
 
         st.dataframe(result_df)
+        st.caption(f"NOTE: Distances are straight-line (Haversine) and do not reflect actual travel distance or time.")
 
