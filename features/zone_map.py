@@ -46,10 +46,10 @@ def process_data(origin_list, customer_name):
         MasterZone_df["OriginZip"].isin(origin_list)
     ].copy()
 
-    filtered["DestZipRange"] = filtered.apply(
-        lambda r: range(r.DestZipMin, r.DestZipMax + 1),
-        axis=1
-    )
+    filtered["DestZipRange"] = [
+        list(range(start, end + 1))
+        for start, end in zip(filtered["DestZipMin"], filtered["DestZipMax"])
+    ]
 
     expanded_df = filtered.explode("DestZipRange")
     expanded_df["zip3"] = expanded_df["DestZipRange"].astype(str).str.zfill(3)
