@@ -43,9 +43,9 @@ def load_user_data():
 @st.cache_data
 def load_static_data():
     try:
-        maersk_zones = pd.read_excel("Maersk Zones.xlsx")
-        warehouse_sorting_loc = pd.read_excel("Warehouse & Sorting Locations.xlsx")
-        maersk_tnt = pd.read_excel("Service TNT.xlsx")
+        maersk_zones = pd.read_excel("assets/Maersk Zones.xlsx")
+        warehouse_sorting_loc = pd.read_excel("assets/Warehouse & Sorting Locations.xlsx")
+        maersk_tnt = pd.read_excel("assets/Service TNT.xlsx")
 
         maersk_zones["Set_ID"] = (
             maersk_zones["Set_ID"]

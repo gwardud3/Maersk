@@ -34,7 +34,7 @@ def haversine_miles(lat1, lon1, lat2, lon2):
 # ---------------- Load warehouses ----------------
 @st.cache_data
 def load_warehouses():
-    df = pd.read_excel(resource_path("Warehouse & Sorting Locations.xlsx"))
+    df = pd.read_excel(resource_path("assets/Warehouse & Sorting Locations.xlsx"))
 
     # Normalize column names
     df.columns = df.columns.str.strip().str.lower()
@@ -58,7 +58,7 @@ def load_warehouses():
 # ---------------- Load ZIP centroids ----------------
 @st.cache_data
 def load_zip_centroids():
-    df = pd.read_csv(resource_path("Centroids.csv"))
+    df = pd.read_csv(resource_path("assets/Centroids.csv"))
 
     # Normalize column names
     df.columns = df.columns.str.strip().str.lower()
@@ -74,7 +74,7 @@ def load_zip_centroids():
 
 # ---------------- Streamlit Feature Entry Point ----------------
 def warehouse_map_app():
-    st.header("🏭 Warehouse Map")
+    st.header("Nearest Warehouse Map")
 
     zip_centroids = load_zip_centroids()
 

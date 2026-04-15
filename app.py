@@ -15,21 +15,21 @@ st.title("📊 Pricing Team Tools (for Other Teams)")
 
 menu = st.sidebar.radio(
     "Select a Tool",
-    ["Zone Map", "Warehouse Map", "Warehouse Sort", "Heatmap", "Important Files"]
+    ["Maersk Zone Map & List", "Nearest Warehouse Map", "Warehouse Sort", "Client Summary & Heatmap", "Download Important Files"]
 )
 
-if menu == "Zone Map":
+if menu == "Maersk Zone Map & List":
     zone_map_app()
 
-elif menu == "Warehouse Map":
+elif menu == "Nearest Warehouse Map":
     warehouse_map_app()
 
 elif menu == "Warehouse Sort":
     warehouse_sort_app()
 
-elif menu == "Heatmap":
+elif menu == "Client Summary & Heatmap":
     heatmap_app()
 
-elif menu == "Important Files":
+elif menu == "Download Important Files":
     downloadables()
 

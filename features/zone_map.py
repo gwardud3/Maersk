@@ -32,7 +32,7 @@ def process_data(origin_list, customer_name):
 
     # Step 1: Load Excel
     progress_text.info("Loading Excel file...")
-    excel_path = resource_path("Maersk Zones.xlsx")
+    excel_path = resource_path("assets/Maersk Zones.xlsx")
     MasterZone_df = pd.read_excel(excel_path)
 
     # Step 2: Process Data
@@ -121,7 +121,7 @@ def process_data(origin_list, customer_name):
 
 def process_export_data(origin_list_3):
 
-    excel_path = resource_path("Maersk Zones.xlsx")
+    excel_path = resource_path("assets/Maersk Zones.xlsx")
     df = pd.read_excel(excel_path)
 
     df["OriginZip"] = df["Set_ID"].astype(str).str.zfill(3)
@@ -145,7 +145,7 @@ def process_export_data(origin_list_3):
     return df[["zip3", "OriginZip", "Zone"]]
 # ---------------- Streamlit Feature Entry Point ----------------
 def zone_map_app():
-    st.header("📦 Zone Map Generator")
+    st.header("Zone Map & List Generator")
 
     origin_input = st.text_input(
         "Enter 5-Digit Origin ZIPs (comma separated)"
