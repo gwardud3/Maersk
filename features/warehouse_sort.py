@@ -24,7 +24,7 @@ def load_user_data():
             st.error(f"Missing required columns: {missing_cols}")
             return None
         
-        data["Volume"] = data["Volume"].fillna(1)
+        data["Volume"] = pd.to_numeric(data["Volume"], errors="coerce").fillna(1)
 
         data["DestZip"] = data["DestZip"].astype(str).str.zfill(5)
         data["Dest3"] = data["DestZip"].str[:3]

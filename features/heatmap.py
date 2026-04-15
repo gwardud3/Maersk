@@ -53,7 +53,7 @@ def load_heatmap_data():
             st.error(f"Missing required columns: {missing}")
             return None
 
-        data["Volume"] = data["Volume"].fillna(1)
+        data["Volume"] = pd.to_numeric(data["Volume"], errors="coerce").fillna(1)
 
         data["DestZip"] = data["DestZip"].astype(str).str.zfill(5)
         data["Dest3"] = data["DestZip"].str[:3]
@@ -235,8 +235,11 @@ def heatmap_app():
             min_val = gdf["log_volume"].min()
             max_val = gdf["log_volume"].max()
             
-            gdf["log_volume_norm"] = (gdf["log_volume"] - min_val) / (max_val - min_val)
-            
+            if max_val == min_val:
+                gdf["log_volume_norm"] = 1
+            else:
+                gdf["log_volume_norm"] = (gdf["log_volume"] - min_val) / (max_val - min_val)
+                
             # Build heat data
             heat_data = []
             
