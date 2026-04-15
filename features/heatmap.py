@@ -53,6 +53,8 @@ def load_heatmap_data():
             st.error(f"Missing required columns: {missing}")
             return None
 
+        data["Volume"] = data["Volume"].fillna(1)
+
         data["DestZip"] = data["DestZip"].astype(str).str.zfill(5)
         data["Dest3"] = data["DestZip"].str[:3]
 

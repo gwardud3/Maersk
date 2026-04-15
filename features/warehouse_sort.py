@@ -23,6 +23,8 @@ def load_user_data():
         if missing_cols:
             st.error(f"Missing required columns: {missing_cols}")
             return None
+        
+        data["Volume"] = data["Volume"].fillna(1)
 
         data["DestZip"] = data["DestZip"].astype(str).str.zfill(5)
         data["Dest3"] = data["DestZip"].str[:3]
@@ -286,7 +288,7 @@ def warehouse_sort_app():
         selected_locations = st.multiselect(
             "Choose locations:",
             options=locations,
-            default=locations[:3]
+            default=locations[:1]
         )
 
         num_nodes = st.selectbox("Number of warehouses:", [1, 2, 3])
