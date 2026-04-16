@@ -250,7 +250,7 @@ def heatmap_app():
 
             progress.progress(60)
             
-            gdf["log_volume"] = gdf["Volume"].apply(lambda v: np.log10(max(v, 1)))
+            gdf["log_volume"] = gdf["volume"].apply(lambda v: np.log10(max(v, 1)))
             # Create map
             m = fm.Map(location=[39.5, -98.35], zoom_start=4)
 
