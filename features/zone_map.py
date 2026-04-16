@@ -114,7 +114,7 @@ def process_data(origin_list, customer_name):
     ax.axis("off")
     plt.tight_layout()
 
-    progress_text.success("Done!  Now loading ")
+    progress_text.success("Done!  Now Loading Customer Zone List")
 
     return fig, expanded_df
 
