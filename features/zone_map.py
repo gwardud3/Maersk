@@ -307,8 +307,8 @@ def zone_map_app():
             for col_idx in columns_with_data:
                 if col_idx == source_col:
                     continue  # skip column B itself
-
-        copy_column_format(ws, source_col, col_idx)
+            
+                copy_column_format(ws, source_col, col_idx)
         
         # ================================
         # 💾 SAVE FOR DOWNLOAD
