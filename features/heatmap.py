@@ -45,18 +45,19 @@ def load_heatmap_data():
 
     try:
         data = pd.read_excel(uploaded_file)
+        data.columns = [c.strip().lower() for c in data.columns]
 
-        required_cols = ["DestZip", "Volume"]
+        required_cols = ["destzip", "volume"]
         missing = [c for c in required_cols if c not in data.columns]
 
         if missing:
             st.error(f"Missing required columns: {missing}")
             return None
 
-        data["Volume"] = pd.to_numeric(data["Volume"], errors="coerce").fillna(1)
+        data["volume"] = pd.to_numeric(data["volume"], errors="coerce").fillna(1)
 
-        data["DestZip"] = data["DestZip"].astype(str).str.zfill(5)
-        data["Dest3"] = data["DestZip"].str[:3]
+        data["destzip"] = data["destzip"].astype(str).str.zfill(5)
+        data["dest3"] = data["destzip"].str[:3]
 
         st.subheader("📊 Data Summary")
         
@@ -65,13 +66,8 @@ def load_heatmap_data():
         # ================================
         
         # Ensure proper formatting
-        if "OriginZip" in data.columns:
-            data["OriginZip"] = data["OriginZip"].astype(str).str.zfill(5)
-        
-        # Create DIM if possible
-        if all(col in data.columns for col in ["Length", "Width", "Height"]):
-            if "DIM" not in data.columns:
-                data["DIM"] = data["Length"] * data["Width"] * data["Height"]
+        if "originzip" in data.columns:
+            data["originzip"] = data["originzip"].astype(str).str.zfill(5)
         
         # ================================
         # 📊 KPI METRICS
@@ -80,22 +76,48 @@ def load_heatmap_data():
         col1, col2, col3 = st.columns(3)
         
         # Total Volume
-        total_volume = data["Volume"].sum()
-        col1.metric("Total Volume", f"{total_volume:,.0f}")
+        total_volume = data["volume"].sum()
+        col1.metric("total volume", f"{total_volume:,.0f}")
         
-        # Average Weight
-        if "Weight" in data.columns:
-            avg_weight = data["Weight"].mean()
+        weight_col = None
+        
+        if "weight" in data.columns:
+            weight_col = "weight"
+        elif "actualwt" in data.columns:
+            weight_col = "actualwt"
+        
+        if weight_col:
+            avg_weight = pd.to_numeric(data[weight_col], errors="coerce").mean()
             col2.metric("Avg Weight", f"{avg_weight:,.2f}")
         else:
             col2.metric("Avg Weight", "N/A")
         
-        # Average DIM
-        if "DIM" in data.columns:
-            avg_dim = data["DIM"].mean()
-            col3.metric("Avg DIM", f"{avg_dim:,.2f}")
-        else:
-            col3.metric("Avg DIM", "N/A")
+        dim_display = "N/A"
+
+        if all(col in data.columns for col in ["length", "width", "height"]):
+        
+            dims = data[["length", "width", "height"]].copy()
+        
+            # Clean + convert
+            for col in ["length", "width", "height"]:
+                dims[col] = pd.to_numeric(dims[col], errors="coerce")
+        
+            dims = dims.dropna()
+        
+            if not dims.empty:
+                # Create string representation (e.g., 10x8x6)
+                dims["dim_str"] = (
+                    dims["length"].astype(int).astype(str) + "x" +
+                    dims["width"].astype(int).astype(str) + "x" +
+                    dims["height"].astype(int).astype(str)
+                )
+        
+                mode_dim = dims["dim_str"].mode()
+        
+                if not mode_dim.empty:
+                    dim_display = mode_dim.iloc[0]
+        
+        col3.metric("Mode Dim", dim_display)
         
         # ================================
         # 📦 VOLUME BY ORIGIN (TOP 5 + OTHER)
@@ -158,6 +180,7 @@ def load_heatmap_data():
 def heatmap_app():
 
     st.header("Data Summary and Heatmap Tool 🗺️")
+    st.caption("PLD Data Columns can include: OriginZip, DestZip, Weight, Length, Width, Height, Volume")
 
     # Load user data
     data = load_heatmap_data()
