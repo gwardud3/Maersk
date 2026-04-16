@@ -231,7 +231,7 @@ def heatmap_app():
 
             # Aggregate to ZIP3
             agg = (
-                filtered_data.groupby("Dest3", as_index=False)["volume"]
+                filtered_data.groupby("dest3", as_index=False)["volume"]
                 .sum()
             )
 
@@ -241,7 +241,7 @@ def heatmap_app():
             gdf = pd.merge(
                 agg,
                 zip3_shapes,
-                left_on="Dest3",
+                left_on="dest3",
                 right_on="ZIP3",
                 how="left"
             )
