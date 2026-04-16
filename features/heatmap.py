@@ -231,7 +231,7 @@ def heatmap_app():
 
             # Aggregate to ZIP3
             agg = (
-                filtered_data.groupby("Dest3", as_index=False)["Volume"]
+                filtered_data.groupby("Dest3", as_index=False)["volume"]
                 .sum()
             )
 
