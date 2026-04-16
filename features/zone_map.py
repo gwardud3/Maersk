@@ -114,7 +114,7 @@ def process_data(origin_list, customer_name):
     ax.axis("off")
     plt.tight_layout()
 
-    progress_text.success("Done!")
+    progress_text.success("Done!  Now loading ")
 
     return fig, expanded_df
 
@@ -301,14 +301,16 @@ def zone_map_app():
                     if pd.notna(value):
                         ws.cell(row=r_idx, column=c_idx, value=value)
                         columns_with_data.add(c_idx)
+        source_col = origin_start_col  # Column B
+
+        # Loop through all origin columns that were written
+        for col_idx in range(origin_start_col, origin_start_col + len(origin_list_5)):
+            if col_idx == source_col:
+                continue  # skip template column (B)
+        
+            copy_column_format(ws, source_col, col_idx)
                         
-            source_col = origin_start_col  # Column B
-            
-            for col_idx in columns_with_data:
-                if col_idx == source_col:
-                    continue  # skip column B itself
-            
-                copy_column_format(ws, source_col, col_idx)
+
         
         # ================================
         # 💾 SAVE FOR DOWNLOAD
