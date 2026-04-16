@@ -264,9 +264,13 @@ def warehouse_sort_app():
     # ================================
     # COMBINE WAREHOUSES
     # ================================
+    warehouse_only = warehouse_df[
+        warehouse_df["Type"].str.strip().str.lower() == "warehouse"
+    ]
+    
     combined_df = pd.concat(
         [
-            warehouse_df[["Location", "ThreeOriginZip"]],
+            warehouse_only[["Location", "ThreeOriginZip"]],
             st.session_state.custom_warehouses
         ],
         ignore_index=True
