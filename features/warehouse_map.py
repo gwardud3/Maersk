@@ -6,6 +6,11 @@ import os
 from math import radians, sin, cos, sqrt, atan2
 from shapely.geometry import LineString
 
+type_colors = {
+    "warehouse": "red",
+    "sort": "blue"
+}
+
 # ---------------- Resource path (repo-root safe) ----------------
 def resource_path(relative_path: str) -> str:
     return os.path.join(
@@ -41,7 +46,7 @@ def load_warehouses():
 
     #st.write(f"Warehouse file columns: {df.columns.tolist()}")
 
-    required_cols = {"building name", "zip", "lat", "lon"}
+    required_cols = {"building name", "zip", "lat", "lon", "type"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
             f"Warehouse file must contain columns: {required_cols}"
@@ -160,23 +165,31 @@ def warehouse_map_app():
     )
     states.boundary.plot(ax=ax, linewidth=0.5, edgecolor="black")
 
-    # Plot all warehouses
-    warehouses.plot(
-        ax=ax,
-        color="gray",
-        markersize=40,
-        alpha=0.6
-    )
+    # Plot all warehouses by type
+    for t, group in warehouses.groupby("type"):
+        color = type_colors.get(t.lower(), "gray")  # fallback if unexpected value
+    
+        group.plot(
+            ax=ax,
+            color=color,
+            markersize=60,
+            alpha=0.7,
+            label=t.title()
+        )
 
     # Highlight nearest warehouses
     if nearest is not None:
-        nearest.plot(
-            ax=ax,
-            color="red",
-            markersize=120,
-            alpha=1,
-            label="Nearest Warehouses"
-        )
+        for t, group in nearest.groupby("type"):
+            color = type_colors.get(t.lower(), "black")
+    
+            group.plot(
+                ax=ax,
+                color=color,
+                markersize=150,
+                edgecolor="black",  # highlight effect
+                linewidth=1.5,
+                label=f"Nearest {t.title()}"
+            )
 
     # Plot ZIP point
     if zip_point is not None:
@@ -212,7 +225,7 @@ def warehouse_map_app():
         st.subheader("📍 Closest Warehouses")
 
         result_df = (
-            nearest[["building name", "distance_miles", "zip"]]
+            nearest[["building name", "distance_miles", "type", "zip"]]
             .assign(distance_miles=lambda d: d["distance_miles"].round(1))
             .rename(columns={"distance_miles": "Distance (miles)"})
             .reset_index(drop=True)
