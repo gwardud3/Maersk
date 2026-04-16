@@ -77,7 +77,7 @@ def load_heatmap_data():
         
         # Total Volume
         total_volume = data["volume"].sum()
-        col1.metric("total volume", f"{total_volume:,.0f}")
+        col1.metric("Total Volume", f"{total_volume:,.0f}")
         
         weight_col = None
         
@@ -126,24 +126,24 @@ def load_heatmap_data():
         if "OriginZip" in data.columns:
         
             vol_by_origin = (
-                data.groupby("OriginZip")["Volume"]
+                data.groupby("originzip")["volume"]
                 .sum()
                 .reset_index()
-                .sort_values(by="Volume", ascending=False)
+                .sort_values(by="volume", ascending=False)
             )
         
-            total_volume = vol_by_origin["Volume"].sum()
+            total_volume = vol_by_origin["volume"].sum()
         
             # Top 5
             top5 = vol_by_origin.head(5).copy()
         
             # Remaining = "Other"
             if len(vol_by_origin) > 5:
-                other_volume = vol_by_origin.iloc[5:]["Volume"].sum()
+                other_volume = vol_by_origin.iloc[5:]["volume"].sum()
         
                 other_row = pd.DataFrame({
-                    "OriginZip": ["Other"],
-                    "Volume": [other_volume]
+                    "originzip": ["Other"],
+                    "volume": [other_volume]
                 })
         
                 final_df = pd.concat([top5, other_row], ignore_index=True)
@@ -157,11 +157,11 @@ def load_heatmap_data():
             ).reset_index(drop=True)
             
             # Calculate %
-            final_df["Volume %"] = (final_df["Volume"] / total_volume) * 100
+            final_df["Volume %"] = (final_df["volume"] / total_volume) * 100
         
             # Format
             final_df["Volume %"] = final_df["Volume %"].map(lambda x: f"{x:.1f}%")
-            final_df["Volume"] = final_df["Volume"].map(lambda x: f"{x:,.0f}")
+            final_df["Volume"] = final_df["volume"].map(lambda x: f"{x:,.0f}")
         
             # Display
             st.markdown("### 📍 Volume by Origin (Top 5 + Other)")
@@ -190,9 +190,9 @@ def heatmap_app():
     # ================================
     # OPTIONAL ORIGIN FILTER
     # ================================
-    if "OriginZip" in data.columns:
+    if "originzip" in data.columns:
 
-        origins = ["All Origins"] + sorted(data["OriginZip"].dropna().unique())
+        origins = ["All Origins"] + sorted(data["originzip"].dropna().unique())
 
         with st.form("origin_filter_form"):
             selected_origin = st.selectbox("Filter by Origin", origins)
@@ -210,7 +210,7 @@ def heatmap_app():
         if selected_origin == "All Origins":
             filtered_data = data
         else:
-            filtered_data = data[data["OriginZip"] == selected_origin]
+            filtered_data = data[data["originzip"] == selected_origin]
 
     else:
         filtered_data = data
