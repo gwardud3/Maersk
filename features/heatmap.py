@@ -35,7 +35,7 @@ def load_zip3_shapes():
 # ================================
 def load_heatmap_data():
     uploaded_file = st.file_uploader(
-        "Upload your shipment data (.xlsx) -- PLD Data Columns can include: OriginZip, DestZip, Weight, Length, Width, Height, Volume"),
+        "Upload your shipment data (.xlsx) -- PLD Data Columns can include: OriginZip, DestZip, Weight, Length, Width, Height, Volume",
         type=["xlsx"],
         key="heatmap_upload"
     )
