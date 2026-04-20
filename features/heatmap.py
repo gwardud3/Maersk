@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 import folium as fm
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 
 # ================================
@@ -161,8 +161,9 @@ def load_heatmap_data():
         # 📊 KPI GRID (2x2)
         # ================================
         
-        row1_col1, row1_col2 = st.columns(2)
+        row1_col1, row1_col2 = st.columns([1, 1.5])
         row2_col1, row2_col2 = st.columns(2)
+                        
         
         # -------------------------------
         # 📦 Total Volume (trend or distribution)
@@ -171,19 +172,22 @@ def load_heatmap_data():
             st.subheader("DAS / EDAS")
         
             if not das_counts.empty:
-                import matplotlib.pyplot as plt
+
                 pie_df = das_counts.reset_index()
                 pie_df.columns = ["type", "count"]
-                fig, ax = plt.subplots(figsize=(6, 4))  # 👈 control size here
 
-                pie_df.set_index("type").plot.pie(
-                    y="count",
+                
+                fig, ax = plt.subplots(figsize=(3, 3))
+                
+                ax.pie(
+                    pie_df["count"],
+                    labels=pie_df["type"],
                     autopct="%1.1f%%",
-                    legend=False,
-                    ax=ax
+                    radius=0.75,
+                    textprops={"fontsize": 10}
                 )
                 
-                ax.set_ylabel("")  # removes annoying label
+                ax.set_ylabel("")  # removes default label
                 
                 st.pyplot(fig)
             else:
