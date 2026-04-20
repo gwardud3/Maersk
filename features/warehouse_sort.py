@@ -7,7 +7,7 @@ from itertools import combinations
 # ================================
 def load_user_data():
     uploaded_file = st.file_uploader(
-        "Upload your shipment data (.xlsx)",
+        "Upload your shipment data (.xlsx)  - Dest Zip must be filled in",
         type=["xlsx"]
     )
 
