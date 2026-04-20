@@ -214,9 +214,18 @@ def load_heatmap_data():
                     else:
                         final_dims = top_part
                     
-                    # Convert to DataFrame for plotting
+                    # Convert to DataFrame
                     dim_df = final_dims.reset_index()
                     dim_df.columns = ["dimension", "count"]
+                    
+                    # 👇 FORCE ORDER (this is the missing piece)
+                    dim_df["dimension"] = pd.Categorical(
+                        dim_df["dimension"],
+                        categories=dim_df["dimension"].tolist(),  # preserves current order
+                        ordered=True
+                    )
+                    
+                    dim_df = dim_df.sort_values("dimension")
                     
                     st.bar_chart(dim_df.set_index("dimension"))
         
