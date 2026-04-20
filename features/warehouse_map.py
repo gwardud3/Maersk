@@ -221,6 +221,20 @@ def warehouse_map_app():
 
     ax.set_title("Warehouse Locations & Nearest Facilities", fontsize=16)
     ax.axis("off")
+
+    handles, labels = ax.get_legend_handles_labels()
+
+    seen = set()
+    unique = [(h, l) for h, l in zip(handles, labels)
+              if not (l in seen or seen.add(l))]
+    ax.legend(
+        *zip(*unique),
+        loc="center left",
+        bbox_to_anchor=(1, 0.5),  # move outside plot
+        title="Legend",
+        frameon=True,
+        markerscale=1.3
+    )
     plt.tight_layout()
 
     st.pyplot(fig)
