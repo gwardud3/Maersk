@@ -193,11 +193,11 @@ def load_heatmap_data():
         
                     # Top 5 (already sorted descending)
                     top5 = dim_counts.head(5)
-        
+                    
                     # Everything else
                     other_sum = dim_counts.iloc[5:].sum()
-        
-                    # 👇 Build final series in correct order
+                    
+                    # Build final series
                     if other_sum > 0:
                         final_dims = pd.concat([
                             top5,
@@ -205,9 +205,16 @@ def load_heatmap_data():
                         ])
                     else:
                         final_dims = top5
-        
-                    final_dims = final_dims.astype(int)  # ensure clean numeric
-                    final_dims = final_dims.loc[list(final_dims.index)]  # 👈 lock order
+                    
+                    # 👇 FORCE correct order
+                    top_part = final_dims.drop("Other", errors="ignore").sort_values(ascending=False)
+                    
+                    if "Other" in final_dims:
+                        final_dims = pd.concat([top_part, final_dims.loc[["Other"]]])
+                    else:
+                        final_dims = top_part
+                    
+                    # Convert to DataFrame for plotting
                     dim_df = final_dims.reset_index()
                     dim_df.columns = ["dimension", "count"]
                     
