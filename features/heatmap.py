@@ -172,7 +172,7 @@ def load_heatmap_data():
         # 📐 Dimension Distribution
         # -------------------------------
         with col3:
-            st.subheader("Top Dimensions")
+            st.subheader("Top 5 Dimensions")
         
             if all(col in data.columns for col in ["length", "width", "height"]):
                 dims = data[["length", "width", "height"]].copy()
