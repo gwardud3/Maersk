@@ -37,10 +37,10 @@ def load_zip3_shapes():
 def load_das_edas():
     df = pd.read_excel(
         "assets/DAS-EDAS-2026LIST.xlsx",
-        skiprows=3
+        skiprows=1
     )
 
-    df.columns = [c.strip().lower() for c in df.columns]
+    df.columns = [str(c).strip().lower() for c in df.columns]
 
     das_zips = (
         df["das"]
