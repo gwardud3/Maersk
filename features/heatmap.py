@@ -134,7 +134,6 @@ def load_heatmap_data():
             st.subheader("Weight Distribution")
         
             if weight_col:
-                weights = pd.to_numeric(data[weight_col], errors="coerce").dropna()
         
                 # Define bins and labels
                 bins = [-float("inf"), 1, 5, 10, 20, 30, float("inf")]
@@ -152,8 +151,19 @@ def load_heatmap_data():
                     .fillna(0)
                     .astype(int)
                 )
+
+                weight_df = bucket_counts.reset_index()
+                weight_df.columns = ["bucket", "count"]
                         
-                st.bar_chart(bucket_counts)
+                weight_df["bucket"] = pd.Categorical(
+                    weight_df["bucket"],
+                    categories=labels,
+                    ordered=True
+                )
+                
+                weight_df = weight_df.sort_values("bucket")
+                
+                st.bar_chart(weight_df.set_index("bucket"))
     
             else:
                 st.write("N/A")
@@ -198,7 +208,10 @@ def load_heatmap_data():
         
                     final_dims = final_dims.astype(int)  # ensure clean numeric
                     final_dims = final_dims.loc[list(final_dims.index)]  # 👈 lock order
-                    st.bar_chart(final_dims)
+                    dim_df = final_dims.reset_index()
+                    dim_df.columns = ["dimension", "count"]
+                    
+                    st.bar_chart(dim_df.set_index("dimension"))
         
                     
                 else:
