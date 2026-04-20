@@ -35,7 +35,7 @@ def load_zip3_shapes():
 # ================================
 def load_heatmap_data():
     uploaded_file = st.file_uploader(
-        "Upload your shipment data (.xlsx),
+        "Upload your shipment data (.xlsx)",
         type=["xlsx"],
         key="heatmap_upload"
     )
