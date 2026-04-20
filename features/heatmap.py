@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 import folium as fm
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # ================================
