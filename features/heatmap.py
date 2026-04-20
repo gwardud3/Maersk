@@ -174,7 +174,7 @@ def load_heatmap_data():
                 import matplotlib.pyplot as plt
                 pie_df = das_counts.reset_index()
                 pie_df.columns = ["type", "count"]
-                fig, ax = plt.subplots(figsize=(3, 3))  # 👈 control size here
+                fig, ax = plt.subplots(figsize=(2, 2))  # 👈 control size here
 
                 pie_df.set_index("type").plot.pie(
                     y="count",
