@@ -173,13 +173,18 @@ def load_heatmap_data():
                 pie_df = das_counts.reset_index()
                 pie_df.columns = ["type", "count"]
         
-                st.pyplot(
-                    pie_df.set_index("type").plot.pie(
-                        y="count",
-                        autopct="%1.1f%%",
-                        legend=False
-                    ).figure
+                fig, ax = plt.subplots(figsize=(3, 3))  # 👈 control size here
+
+                pie_df.set_index("type").plot.pie(
+                    y="count",
+                    autopct="%1.1f%%",
+                    legend=False,
+                    ax=ax
                 )
+                
+                ax.set_ylabel("")  # removes annoying label
+                
+                st.pyplot(fig)
             else:
                 st.write("No ZIP classification available")
 
