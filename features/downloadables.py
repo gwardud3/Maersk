@@ -10,3 +10,11 @@ def downloadables():
             file_name="DAS-EDAS-2026LIST.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
+    with open("assets/MaerskAppTemplate.xlsx", "rb") as f:
+        st.download_button(
+            label="Download Maersk App Template",
+            data=f,
+            file_name="MaerskAppTemplate.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
