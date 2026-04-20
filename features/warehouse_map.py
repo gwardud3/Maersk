@@ -162,7 +162,7 @@ def warehouse_map_app():
                 )
     # ---------------- Plot ----------------
     fig, ax = plt.subplots(figsize=(15, 10))
-
+    plt.subplots_adjust(right=0.8)
     # State boundaries
     states = gpd.read_file(
         resource_path("shapefiles/states_preprocessed.gpkg"),
@@ -229,12 +229,13 @@ def warehouse_map_app():
               if not (l in seen or seen.add(l))]
     ax.legend(
         *zip(*unique),
-        loc="lower left,  # move outside plot
+        loc="center left",
+        bbox_to_anchor=(1, 0.5),
         title="Legend",
         frameon=True,
         markerscale=1.3
     )
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 0.8, 1])
 
     st.pyplot(fig)
 
