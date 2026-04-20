@@ -156,23 +156,19 @@ def load_heatmap_data():
         # 📊 KPI METRICS (with charts)
         # ================================
         
-        col1, col2, col3 = st.columns(3)
+        # ================================
+        # 📊 KPI GRID (2x2)
+        # ================================
+        
+        row1_col1, row1_col2 = st.columns(2)
+        row2_col1, row2_col2 = st.columns(2)
         
         # -------------------------------
         # 📦 Total Volume (trend or distribution)
         # -------------------------------
-        with col1:
-            st.subheader("Key Deets")
+        with row1_col1:
+            st.subheader("DAS / EDAS Mix")
         
-            st.write(f"Total Volume: {int(total_volume):,}")
-        
-            if weights is not None and not weights.empty:
-                st.write(f"Average Weight: {weights.mean():,.2f} lbs")
-            else:
-                st.write("Average Weight: N/A")
-        
-            st.write(f"Top DIM: {top_dim}")
-
             if not das_counts.empty:
                 pie_df = das_counts.reset_index()
                 pie_df.columns = ["type", "count"]
@@ -184,15 +180,26 @@ def load_heatmap_data():
                         legend=False
                     ).figure
                 )
-        
             else:
                 st.write("No ZIP classification available")
+
+        with row1_col2:
+            st.subheader("Key Details")
+        
+            st.write(f"Total Volume: {int(total_volume):,}")
+        
+            if weights is not None and not weights.empty:
+                st.write(f"Average Weight: {weights.mean():,.2f} lbs")
+            else:
+                st.write("Average Weight: N/A")
+        
+            st.write(f"Top DIM: {top_dim}")
 
                     
         # -------------------------------
         # ⚖️ Weight Distribution
         # -------------------------------
-        with col2:
+        with row2_col1:
             st.subheader("Weight Distribution")
         
             if weight_col:
@@ -233,7 +240,7 @@ def load_heatmap_data():
         # -------------------------------
         # 📐 Dimension Distribution
         # -------------------------------
-        with col3:
+        with row2_col2:
             st.subheader("Top 5 Dimensions")
         
             if all(col in data.columns for col in ["length", "width", "height"]):
