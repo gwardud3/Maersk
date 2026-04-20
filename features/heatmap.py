@@ -79,15 +79,31 @@ def load_heatmap_data():
         # 📦 Total Volume (trend or distribution)
         # -------------------------------
         with col1:
-            st.subheader("Total Volume")
+            st.subheader("Volume by Origin")
         
-            if "volume" in data.columns:
-                vol_series = pd.to_numeric(data["volume"], errors="coerce")
+            if "volume" in data.columns and "origin" in data.columns:
+                vol = data.copy()
         
-                st.line_chart(vol_series)  # 👈 simple trend
-                st.caption(f"Total: {vol_series.sum():,.0f}")
+                # Clean data
+                vol["volume"] = pd.to_numeric(vol["volume"], errors="coerce")
+                vol = vol.dropna(subset=["volume", "origin"])
+        
+                # Aggregate
+                vol_by_origin = (
+                    vol.groupby("origin")["volume"]
+                    .sum()
+                    .sort_values(ascending=False)
+                )
+        
+                # Show top origins (prevents clutter)
+                top_n = 10
+                top_origins = vol_by_origin.head(top_n)
+        
+                st.bar_chart(top_origins)
+        
+                st.caption(f"Total Volume: {vol_by_origin.sum():,.0f}")
             else:
-                st.write("N/A")
+                st.write("Missing 'volume' or 'origin' column")
         
         # -------------------------------
         # ⚖️ Weight Distribution
@@ -118,7 +134,7 @@ def load_heatmap_data():
         
                 st.bar_chart(bucket_counts)
         
-                st.caption(f"Total Shipments: {int(bucket_counts.sum()):,}")
+                st.caption(f"Average Weight: {weights.mean():,.2f} lbs")
             else:
                 st.write("N/A")
         
