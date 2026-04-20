@@ -184,8 +184,6 @@ def load_heatmap_data():
                         legend=False
                     ).figure
                 )
-                st.write(f"DAS ZIP count: {len(das_zips):,}")
-                st.write(f"EDAS ZIP count: {len(edas_zips):,}")
         
             else:
                 st.write("No ZIP classification available")
