@@ -167,7 +167,7 @@ def load_heatmap_data():
         # 📦 Total Volume (trend or distribution)
         # -------------------------------
         with row1_col1:
-            st.subheader("DAS / EDAS Mix")
+            st.subheader("DAS / EDAS")
         
             if not das_counts.empty:
                 pie_df = das_counts.reset_index()
