@@ -109,6 +109,10 @@ def load_heatmap_data():
                 labels = ["<1 lb", "1–5", "6–10", "11–20", "21–30", "31+"]
         
                 weight_buckets = pd.cut(weights, bins=bins, labels=labels, right=True)
+
+                weight_buckets = weight_buckets.astype(
+                    pd.CategoricalDtype(categories=labels, ordered=True)
+                )
         
                 bucket_counts = weight_buckets.value_counts().reindex(labels)
         
@@ -141,13 +145,22 @@ def load_heatmap_data():
         
                     dim_counts = dims["dim_str"].value_counts()
         
+                    # Top 5 (already sorted descending)
                     top5 = dim_counts.head(5)
+        
+                    # Everything else
                     other_sum = dim_counts.iloc[5:].sum()
         
+                    # 👇 Build final series in correct order
                     if other_sum > 0:
-                        top5["Other"] = other_sum
+                        final_dims = pd.concat([
+                            top5,
+                            pd.Series({"Other": other_sum})
+                        ])
+                    else:
+                        final_dims = top5
         
-                    st.bar_chart(top5)
+                    st.bar_chart(final_dims)
         
                     st.caption(f"Most common: {top5.index[0]}")
                 else:
