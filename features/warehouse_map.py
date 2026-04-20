@@ -229,8 +229,7 @@ def warehouse_map_app():
               if not (l in seen or seen.add(l))]
     ax.legend(
         *zip(*unique),
-        loc="center left",
-        bbox_to_anchor=(1, 0.5),  # move outside plot
+        loc="lower left,  # move outside plot
         title="Legend",
         frameon=True,
         markerscale=1.3
