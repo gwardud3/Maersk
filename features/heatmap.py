@@ -150,7 +150,7 @@ def load_heatmap_data():
         
         data["das_type"] = data["destzip"].apply(classify_zip)
         
-        das_counts = data["das_type"].value_counts()
+        das_counts = data.groupby("das_type")["volume"].sum()
         
         # ================================
         # 📊 KPI METRICS (with charts)
@@ -162,7 +162,7 @@ def load_heatmap_data():
         # 📦 Total Volume (trend or distribution)
         # -------------------------------
         with col1:
-            st.subheader("Key Details")
+            st.subheader("Key Deets")
         
             st.write(f"Total Volume: {int(total_volume):,}")
         
@@ -185,7 +185,6 @@ def load_heatmap_data():
                     ).figure
                 )
         
-                st.caption(f"Total Shipments: {int(das_counts.sum()):,}")
             else:
                 st.write("No ZIP classification available")
 
