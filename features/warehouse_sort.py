@@ -7,7 +7,7 @@ from itertools import combinations
 # ================================
 def load_user_data():
     uploaded_file = st.file_uploader(
-        "Upload your shipment data (.xlsx)  - Dest Zip must be filled in",
+        "Upload your shipment data (.xlsx)",
         type=["xlsx"]
     )
 
@@ -30,7 +30,7 @@ def load_user_data():
         data["Dest3"] = data["DestZip"].str[:3]
 
         st.success("File uploaded successfully ✅")
-        st.dataframe(data.head())
+        #st.dataframe(data.head())
 
         return data
 
@@ -186,6 +186,7 @@ def build_distribution(data, best_combo):
 # ================================
 def warehouse_sort_app():
     st.header("Warehouse Sorting Tool")
+    st.caption("DestZip is Required")
 
     # ================================
     # LOAD DATA
