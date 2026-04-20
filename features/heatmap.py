@@ -527,15 +527,3 @@ def heatmap_app():
             height=900
         )
 
-        filename = st.text_input(
-            "Enter file name (without .html):",
-            "heatmap"
-        )
-
-        if filename:
-            st.download_button(
-                label="Download HTML",
-                data=st.session_state["heatmap_html"],
-                file_name=f"{filename}.html",
-                mime="text/html"
-            )
