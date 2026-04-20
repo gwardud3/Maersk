@@ -70,54 +70,75 @@ def load_heatmap_data():
             data["originzip"] = data["originzip"].astype(str).str.zfill(5)
         
         # ================================
-        # 📊 KPI METRICS
+        # 📊 KPI METRICS (with charts)
         # ================================
         
         col1, col2, col3 = st.columns(3)
         
-        # Total Volume
-        total_volume = data["volume"].sum()
-        col1.metric("Total Volume", f"{total_volume:,.0f}")
+        # -------------------------------
+        # 📦 Total Volume (trend or distribution)
+        # -------------------------------
+        with col1:
+            st.subheader("Total Volume")
         
-        weight_col = None
+            if "volume" in data.columns:
+                vol_series = pd.to_numeric(data["volume"], errors="coerce")
         
-        if "weight" in data.columns:
-            weight_col = "weight"
-        elif "actualwt" in data.columns:
-            weight_col = "actualwt"
+                st.line_chart(vol_series)  # 👈 simple trend
+                st.caption(f"Total: {vol_series.sum():,.0f}")
+            else:
+                st.write("N/A")
         
-        if weight_col:
-            avg_weight = pd.to_numeric(data[weight_col], errors="coerce").mean()
-            col2.metric("Avg Weight", f"{avg_weight:,.2f}")
-        else:
-            col2.metric("Avg Weight", "N/A")
+        # -------------------------------
+        # ⚖️ Weight Distribution
+        # -------------------------------
+        with col2:
+            st.subheader("Weight")
         
-        dim_display = "N/A"
-
-        if all(col in data.columns for col in ["length", "width", "height"]):
+            weight_col = None
+            if "weight" in data.columns:
+                weight_col = "weight"
+            elif "actualwt" in data.columns:
+                weight_col = "actualwt"
         
-            dims = data[["length", "width", "height"]].copy()
+            if weight_col:
+                weights = pd.to_numeric(data[weight_col], errors="coerce").dropna()
         
-            # Clean + convert
-            for col in ["length", "width", "height"]:
-                dims[col] = pd.to_numeric(dims[col], errors="coerce")
+                st.bar_chart(weights)  # 👈 distribution view
+                st.caption(f"Avg: {weights.mean():,.2f}")
+            else:
+                st.write("N/A")
         
-            dims = dims.dropna()
+        # -------------------------------
+        # 📐 Dimension Distribution
+        # -------------------------------
+        with col3:
+            st.subheader("Dimensions")
         
-            if not dims.empty:
-                # Create string representation (e.g., 10x8x6)
-                dims["dim_str"] = (
-                    dims["length"].astype(int).astype(str) + "x" +
-                    dims["width"].astype(int).astype(str) + "x" +
-                    dims["height"].astype(int).astype(str)
-                )
+            if all(col in data.columns for col in ["length", "width", "height"]):
+                dims = data[["length", "width", "height"]].copy()
         
-                mode_dim = dims["dim_str"].mode()
+                for col in ["length", "width", "height"]:
+                    dims[col] = pd.to_numeric(dims[col], errors="coerce")
         
-                if not mode_dim.empty:
-                    dim_display = mode_dim.iloc[0]
+                dims = dims.dropna()
         
-        col3.metric("Mode Dim", dim_display)
+                if not dims.empty:
+                    dims["dim_str"] = (
+                        dims["length"].astype(int).astype(str) + "x" +
+                        dims["width"].astype(int).astype(str) + "x" +
+                        dims["height"].astype(int).astype(str)
+                    )
+        
+                    # Count occurrences instead of mode
+                    dim_counts = dims["dim_str"].value_counts().head(10)
+        
+                    st.bar_chart(dim_counts)  # 👈 MUCH better than "mode"
+                    st.caption(f"Top: {dim_counts.index[0]}")
+                else:
+                    st.write("No valid dimensions")
+            else:
+                st.write("N/A")
         
         # ================================
         # 📦 VOLUME BY ORIGIN (TOP 5 + OTHER)
