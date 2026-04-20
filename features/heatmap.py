@@ -93,7 +93,7 @@ def load_heatmap_data():
         # ⚖️ Weight Distribution
         # -------------------------------
         with col2:
-            st.subheader("Weight")
+            st.subheader("Weight Distribution")
         
             weight_col = None
             if "weight" in data.columns:
@@ -104,8 +104,17 @@ def load_heatmap_data():
             if weight_col:
                 weights = pd.to_numeric(data[weight_col], errors="coerce").dropna()
         
-                st.bar_chart(weights)  # 👈 distribution view
-                st.caption(f"Avg: {weights.mean():,.2f}")
+                # Define bins and labels
+                bins = [-float("inf"), 1, 5, 10, 20, 30, float("inf")]
+                labels = ["<1 lb", "1–5", "6–10", "11–20", "21–30", "31+"]
+        
+                weight_buckets = pd.cut(weights, bins=bins, labels=labels, right=True)
+        
+                bucket_counts = weight_buckets.value_counts().reindex(labels)
+        
+                st.bar_chart(bucket_counts)
+        
+                st.caption(f"Total Shipments: {int(bucket_counts.sum()):,}")
             else:
                 st.write("N/A")
         
@@ -113,7 +122,7 @@ def load_heatmap_data():
         # 📐 Dimension Distribution
         # -------------------------------
         with col3:
-            st.subheader("Dimensions")
+            st.subheader("Top Dimensions")
         
             if all(col in data.columns for col in ["length", "width", "height"]):
                 dims = data[["length", "width", "height"]].copy()
@@ -130,11 +139,17 @@ def load_heatmap_data():
                         dims["height"].astype(int).astype(str)
                     )
         
-                    # Count occurrences instead of mode
-                    dim_counts = dims["dim_str"].value_counts().head(10)
+                    dim_counts = dims["dim_str"].value_counts()
         
-                    st.bar_chart(dim_counts)  # 👈 MUCH better than "mode"
-                    st.caption(f"Top: {dim_counts.index[0]}")
+                    top5 = dim_counts.head(5)
+                    other_sum = dim_counts.iloc[5:].sum()
+        
+                    if other_sum > 0:
+                        top5["Other"] = other_sum
+        
+                    st.bar_chart(top5)
+        
+                    st.caption(f"Most common: {top5.index[0]}")
                 else:
                     st.write("No valid dimensions")
             else:
