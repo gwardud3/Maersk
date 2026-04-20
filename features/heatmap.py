@@ -42,7 +42,7 @@ def load_heatmap_data():
 
     if uploaded_file is None:
         return None
-
+        
     try:
         data = pd.read_excel(uploaded_file)
         data.columns = [c.strip().lower() for c in data.columns]
@@ -68,6 +68,7 @@ def load_heatmap_data():
         # Ensure proper formatting
         if "originzip" in data.columns:
             data["originzip"] = data["originzip"].astype(str).str.zfill(5)
+        data["volume"] = pd.to_numeric(data["volume"], errors="coerce").fillna(1)
         
         # ================================
         # 📊 KPI METRICS (with charts)
@@ -81,16 +82,16 @@ def load_heatmap_data():
         with col1:
             st.subheader("Volume by Origin")
         
-            if "volume" in data.columns and "origin" in data.columns:
+            if "volume" in data.columns and "originzip" in data.columns:
                 vol = data.copy()
         
                 # Clean data
                 vol["volume"] = pd.to_numeric(vol["volume"], errors="coerce")
-                vol = vol.dropna(subset=["volume", "origin"])
+                vol = vol.dropna(subset=["volume", "originzip"])
         
                 # Aggregate
                 vol_by_origin = (
-                    vol.groupby("origin")["volume"]
+                    vol.groupby("originzip")["volume"]
                     .sum()
                     .sort_values(ascending=False)
                 )
@@ -103,7 +104,7 @@ def load_heatmap_data():
         
                 st.caption(f"Total Volume: {vol_by_origin.sum():,.0f}")
             else:
-                st.write("Missing 'volume' or 'origin' column")
+                st.write("Missing 'Volume' or 'OriginZip' column")
         
         # -------------------------------
         # ⚖️ Weight Distribution
@@ -188,7 +189,7 @@ def load_heatmap_data():
         # 📦 VOLUME BY ORIGIN (TOP 5 + OTHER)
         # ================================
         
-        if "OriginZip" in data.columns:
+        if "originzip" in data.columns:
         
             vol_by_origin = (
                 data.groupby("originzip")["volume"]
@@ -217,7 +218,7 @@ def load_heatmap_data():
 
             # Sort so "Other" stays at bottom naturally
             final_df = final_df.sort_values(
-                by="Volume",
+                by="volume",
                 ascending=False
             ).reset_index(drop=True)
             
