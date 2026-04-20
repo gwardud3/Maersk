@@ -31,6 +31,36 @@ def load_zip3_shapes():
     return gdf
 
 # ================================
+# 📂 LOAD DAS/EDAS List (CACHED)
+# ================================
+@st.cache_data
+def load_das_edas():
+    df = pd.read_excel(
+        "assets/DAS-EDAS-2026LIST.xlsx",
+        skiprows=3
+    )
+
+    df.columns = [c.strip().lower() for c in df.columns]
+
+    das_zips = (
+        df["das"]
+        .dropna()
+        .astype(str)
+        .str.zfill(5)
+        .unique()
+    )
+
+    edas_zips = (
+        df["edas"]
+        .dropna()
+        .astype(str)
+        .str.zfill(5)
+        .unique()
+    )
+
+    return set(das_zips), set(edas_zips)
+
+# ================================
 # 📥 LOAD USER DATA
 # ================================
 def load_heatmap_data():
@@ -104,6 +134,23 @@ def load_heatmap_data():
                 )
                 dim_counts = dims["dim_str"].value_counts()
                 top_dim = dim_counts.index[0]
+
+        das_zips, edas_zips = load_das_edas()
+
+        # Make sure destzip is clean
+        data["destzip"] = data["destzip"].astype(str).str.zfill(5)
+        
+        def classify_zip(z):
+            if z in edas_zips:
+                return "EDAS"
+            elif z in das_zips:
+                return "DAS"
+            else:
+                return "Neither"
+        
+        data["das_type"] = data["destzip"].apply(classify_zip)
+        
+        das_counts = data["das_type"].value_counts()
         
         # ================================
         # 📊 KPI METRICS (with charts)
@@ -125,6 +172,22 @@ def load_heatmap_data():
                 st.write("Average Weight: N/A")
         
             st.write(f"Top DIM: {top_dim}")
+
+            if not das_counts.empty:
+                pie_df = das_counts.reset_index()
+                pie_df.columns = ["type", "count"]
+        
+                st.pyplot(
+                    pie_df.set_index("type").plot.pie(
+                        y="count",
+                        autopct="%1.1f%%",
+                        legend=False
+                    ).figure
+                )
+        
+                st.caption(f"Total Shipments: {int(das_counts.sum()):,}")
+            else:
+                st.write("No ZIP classification available")
 
                     
         # -------------------------------
