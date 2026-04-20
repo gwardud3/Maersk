@@ -80,9 +80,13 @@ def load_heatmap_data():
         # 📦 Total Volume (trend or distribution)
         # -------------------------------
         with col1:
-            st.subheader("Volume by Origin")
+            st.subheader("Key Details")
 
             st.write(f"Total Volume: {int(vol_by_origin.sum()):,}")
+
+            st.write(f"Average Weight: {weights.mean():,.2f} lbs")
+
+            st.write(f"Mode DIMs: {top5.index[0]}")
 
                     
         # -------------------------------
@@ -118,8 +122,7 @@ def load_heatmap_data():
                 )
                         
                 st.bar_chart(bucket_counts)
-        
-                st.caption(f"Average Weight: {weights.mean():,.2f} lbs")
+    
             else:
                 st.write("N/A")
         
@@ -164,7 +167,7 @@ def load_heatmap_data():
                     final_dims = final_dims.astype(int)  # ensure clean numeric
                     st.bar_chart(final_dims)
         
-                    st.caption(f"Most common: {top5.index[0]}")
+                    
                 else:
                     st.write("No valid dimensions")
             else:
