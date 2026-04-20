@@ -186,15 +186,34 @@ def load_heatmap_data():
         with row1_col2:
             st.subheader("Key Details")
         
-            st.write(f"Total Volume: {int(total_volume):,}")
-        
-            if weights is not None and not weights.empty:
-                st.write(f"Average Weight: {weights.mean():,.2f} lbs")
-            else:
-                st.write("Average Weight: N/A")
-        
-            st.write(f"Top DIM: {top_dim}")
+            avg_weight_display = (
+                f"{weights.mean():,.2f} lbs"
+                if weights is not None and not weights.empty
+                else "N/A"
+            )
 
+            st.markdown(f"""
+            <div style="padding:10px 0;">
+                <div style="font-size:28px; font-weight:600;">
+                    {int(total_volume):,}
+                </div>
+                <div style="color:gray;">Total Volume</div>
+            </div>
+            
+            <div style="padding:10px 0;">
+                <div style="font-size:22px; font-weight:500;">
+                    {avg_weight_display}
+                </div>
+                <div style="color:gray;">Average Weight</div>
+            </div>
+            
+            <div style="padding:10px 0;">
+                <div style="font-size:22px; font-weight:500;">
+                    {top_dim}
+                </div>
+                <div style="color:gray;">Top Dimension</div>
+            </div>
+            """, unsafe_allow_html=True)
                     
         # -------------------------------
         # ⚖️ Weight Distribution
