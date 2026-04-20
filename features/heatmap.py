@@ -82,7 +82,7 @@ def load_heatmap_data():
         with col1:
             st.subheader("Key Details")
 
-            st.write(f"Total Volume: {int(vol_by_origin.sum()):,}")
+            st.write(f"Total Volume: {int(volume.sum()):,}")
 
             st.write(f"Average Weight: {weights.mean():,.2f} lbs")
 
