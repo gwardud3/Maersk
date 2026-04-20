@@ -81,36 +81,9 @@ def load_heatmap_data():
         # -------------------------------
         with col1:
             st.subheader("Volume by Origin")
-        
-            if "volume" in data.columns and "originzip" in data.columns:
-            
-                    vol_by_origin = (
-                        data.groupby("originzip")["volume"]
-                        .sum()
-                        .sort_values(ascending=False)
-                    )
-            
-                    top_n = 5
-                    top_origins = vol_by_origin.head(top_n)
-            
-                    other_sum = vol_by_origin.iloc[top_n:].sum()
-            
-                    # Build display
-                    display_series = top_origins.copy()
-                    if other_sum > 0:
-                        display_series["Other"] = other_sum
-            
-                    # 👇 BIG FONT DISPLAY (cleaner than dataframe)
-                    for origin, vol in display_series.items():
-                        st.markdown(
-                            f"**{origin}** — {int(vol):,}",
-                            unsafe_allow_html=True
-                        )
-            
-                    st.caption(f"Total Volume: {int(vol_by_origin.sum()):,}")
-            
-                else:
-                    st.write("Missing 'volume' or 'originzip'")
+
+            st.write(f"Total Volume: {int(vol_by_origin.sum()):,}")
+
                     
         # -------------------------------
         # ⚖️ Weight Distribution
