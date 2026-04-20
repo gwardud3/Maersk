@@ -136,8 +136,6 @@ def load_heatmap_data():
                 top_dim = dim_counts.index[0]
 
         das_zips, edas_zips = load_das_edas()
-        st.write(f"DAS ZIP count: {len(das_zips):,}")
-        st.write(f"EDAS ZIP count: {len(edas_zips):,}")
 
         # Make sure destzip is clean
         data["destzip"] = data["destzip"].astype(str).str.zfill(5)
@@ -186,6 +184,8 @@ def load_heatmap_data():
                         legend=False
                     ).figure
                 )
+                st.write(f"DAS ZIP count: {len(das_zips):,}")
+                st.write(f"EDAS ZIP count: {len(edas_zips):,}")
         
             else:
                 st.write("No ZIP classification available")
