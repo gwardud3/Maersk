@@ -83,29 +83,35 @@ def load_heatmap_data():
             st.subheader("Volume by Origin")
         
             if "volume" in data.columns and "originzip" in data.columns:
-                vol = data.copy()
-        
-                # Clean data
-                vol["volume"] = pd.to_numeric(vol["volume"], errors="coerce")
-                vol = vol.dropna(subset=["volume", "originzip"])
-        
-                # Aggregate
-                vol_by_origin = (
-                    vol.groupby("originzip")["volume"]
-                    .sum()
-                    .sort_values(ascending=False)
-                )
-        
-                # Show top origins (prevents clutter)
-                top_n = 10
-                top_origins = vol_by_origin.head(top_n)
-        
-                st.bar_chart(top_origins)
-        
-                st.caption(f"Total Volume: {vol_by_origin.sum():,.0f}")
-            else:
-                st.write("Missing 'Volume' or 'OriginZip' column")
-        
+            
+                    vol_by_origin = (
+                        data.groupby("originzip")["volume"]
+                        .sum()
+                        .sort_values(ascending=False)
+                    )
+            
+                    top_n = 5
+                    top_origins = vol_by_origin.head(top_n)
+            
+                    other_sum = vol_by_origin.iloc[top_n:].sum()
+            
+                    # Build display
+                    display_series = top_origins.copy()
+                    if other_sum > 0:
+                        display_series["Other"] = other_sum
+            
+                    # 👇 BIG FONT DISPLAY (cleaner than dataframe)
+                    for origin, vol in display_series.items():
+                        st.markdown(
+                            f"**{origin}** — {int(vol):,}",
+                            unsafe_allow_html=True
+                        )
+            
+                    st.caption(f"Total Volume: {int(vol_by_origin.sum()):,}")
+            
+                else:
+                    st.write("Missing 'volume' or 'originzip'")
+                    
         # -------------------------------
         # ⚖️ Weight Distribution
         # -------------------------------
@@ -131,8 +137,13 @@ def load_heatmap_data():
                     pd.CategoricalDtype(categories=labels, ordered=True)
                 )
         
-                bucket_counts = weight_buckets.value_counts().reindex(labels)
-        
+                bucket_counts = (
+                    weight_buckets.value_counts()
+                    .reindex(labels)
+                    .fillna(0)
+                    .astype(int)
+                )
+                        
                 st.bar_chart(bucket_counts)
         
                 st.caption(f"Average Weight: {weights.mean():,.2f} lbs")
@@ -177,6 +188,7 @@ def load_heatmap_data():
                     else:
                         final_dims = top5
         
+                    final_dims = final_dims.astype(int)  # ensure clean numeric
                     st.bar_chart(final_dims)
         
                     st.caption(f"Most common: {top5.index[0]}")
