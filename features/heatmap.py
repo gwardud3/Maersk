@@ -68,7 +68,42 @@ def load_heatmap_data():
         # Ensure proper formatting
         if "originzip" in data.columns:
             data["originzip"] = data["originzip"].astype(str).str.zfill(5)
-        data["volume"] = pd.to_numeric(data["volume"], errors="coerce").fillna(1)
+
+
+        # ================================
+        # PRE-CALCULATIONS
+        # ================================
+        
+        # Volume
+        total_volume = data["volume"].sum()
+        
+        # Weight
+        weights = None
+        weight_col = None
+        if "weight" in data.columns:
+            weight_col = "weight"
+        elif "actualwt" in data.columns:
+            weight_col = "actualwt"
+        
+        if weight_col:
+            weights = pd.to_numeric(data[weight_col], errors="coerce").dropna()
+        
+        # Dimensions
+        top_dim = "N/A"
+        if all(col in data.columns for col in ["length", "width", "height"]):
+            dims = data[["length", "width", "height"]].copy()
+            for col in ["length", "width", "height"]:
+                dims[col] = pd.to_numeric(dims[col], errors="coerce")
+            dims = dims.dropna()
+        
+            if not dims.empty:
+                dims["dim_str"] = (
+                    dims["length"].astype(int).astype(str) + "x" +
+                    dims["width"].astype(int).astype(str) + "x" +
+                    dims["height"].astype(int).astype(str)
+                )
+                dim_counts = dims["dim_str"].value_counts()
+                top_dim = dim_counts.index[0]
         
         # ================================
         # 📊 KPI METRICS (with charts)
@@ -81,12 +116,15 @@ def load_heatmap_data():
         # -------------------------------
         with col1:
             st.subheader("Key Details")
-
-            st.write(f"Total Volume: {int(volume.sum()):,}")
-
-            st.write(f"Average Weight: {weights.mean():,.2f} lbs")
-
-            st.write(f"Mode DIMs: {top5.index[0]}")
+        
+            st.write(f"Total Volume: {int(total_volume):,}")
+        
+            if weights is not None and not weights.empty:
+                st.write(f"Average Weight: {weights.mean():,.2f} lbs")
+            else:
+                st.write("Average Weight: N/A")
+        
+            st.write(f"Top DIM: {top_dim}")
 
                     
         # -------------------------------
@@ -94,12 +132,6 @@ def load_heatmap_data():
         # -------------------------------
         with col2:
             st.subheader("Weight Distribution")
-        
-            weight_col = None
-            if "weight" in data.columns:
-                weight_col = "weight"
-            elif "actualwt" in data.columns:
-                weight_col = "actualwt"
         
             if weight_col:
                 weights = pd.to_numeric(data[weight_col], errors="coerce").dropna()
@@ -165,6 +197,7 @@ def load_heatmap_data():
                         final_dims = top5
         
                     final_dims = final_dims.astype(int)  # ensure clean numeric
+                    final_dims = final_dims.loc[list(final_dims.index)]  # 👈 lock order
                     st.bar_chart(final_dims)
         
                     
