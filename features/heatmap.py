@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 import folium as fm
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 
 # ================================
@@ -171,9 +171,9 @@ def load_heatmap_data():
             st.subheader("DAS / EDAS")
         
             if not das_counts.empty:
+                import matplotlib.pyplot as plt
                 pie_df = das_counts.reset_index()
                 pie_df.columns = ["type", "count"]
-        
                 fig, ax = plt.subplots(figsize=(3, 3))  # 👈 control size here
 
                 pie_df.set_index("type").plot.pie(
@@ -380,7 +380,8 @@ def load_heatmap_data():
         return data
 
     except Exception as e:
-        st.error(f"Error reading file: {e}")
+        import traceback
+        st.error(traceback.format_exc())
         return None
 
 
