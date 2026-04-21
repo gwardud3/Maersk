@@ -184,7 +184,8 @@ def load_heatmap_data():
                     labels=pie_df["type"],
                     autopct="%1.1f%%",
                     radius=0.75,
-                    textprops={"fontsize": 10}
+                    textprops={"fontsize": 10},
+                    wedgeprops=dict(width=0.4))
                 )
                 
                 ax.set_ylabel("")  # removes default label
