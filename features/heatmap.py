@@ -46,6 +46,8 @@ def load_das_edas():
     das_zips = (
         df["das"]
         .dropna()
+        .astype(float)
+        .astype(int)
         .astype(str)
         .str.zfill(5)
         .unique()
@@ -170,10 +172,6 @@ def load_heatmap_data():
         # -------------------------------
         with row1_col1:
             st.subheader("DAS / EDAS")
-            st.write(f"DAS count: {len(das_zips):,}")
-            st.write(f"EDAS count: {len(edas_zips):,}")
-            st.write("Sample DAS:", list(das_zips)[:10])
-            st.write("Sample EDAS:", list(edas_zips)[:10])
         
             if not das_counts.empty:
 
