@@ -138,6 +138,12 @@ def load_heatmap_data():
 
         das_zips, edas_zips = load_das_edas()
 
+        st.write(f"DAS count: {len(das_zips):,}")
+        st.write(f"EDAS count: {len(edas_zips):,}")
+        
+        st.write("Sample DAS:", list(das_zips)[:10])
+        st.write("Sample EDAS:", list(edas_zips)[:10])
+
         # Make sure destzip is clean
         data["destzip"] = data["destzip"].astype(str).str.zfill(5)
         
