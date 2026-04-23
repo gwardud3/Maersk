@@ -179,7 +179,7 @@ def load_heatmap_data():
                 pie_df = das_counts.reset_index()
                 pie_df.columns = ["type", "count"]
 
-                fig, ax = plt.subplots(figsize=(4, 4))
+                fig, ax = plt.subplots(figsize=(6, 3))
 
                 color_map = {
                     "DAS": "#EAF7FD", 
@@ -324,7 +324,7 @@ def load_heatmap_data():
                 )
                 
                 weight_df = weight_df.sort_values("bucket")
-                fig, ax = plt.subplots(figsize=(5, 3))
+                fig, ax = plt.subplots(figsize=(6, 3))
 
                 ax.bar(weight_df["bucket"], weight_df["count"], color="#42B0D5")
                 
