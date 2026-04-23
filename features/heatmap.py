@@ -201,7 +201,7 @@ def load_heatmap_data():
                 )
                 
                 for autotext in autotexts:
-                    autotext.set_color("Gray")
+                    autotext.set_color("White")
 
                 
                 ax.set_ylabel("")  # removes default label
