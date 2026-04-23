@@ -182,7 +182,7 @@ def load_heatmap_data():
 
                 color_map = {
                     "DAS": "#D6F1FA",
-                    "EDAS": "0E4F6A",
+                    "EDAS": "#0E4F6A",
                     " ": "#42B0D5"
                 }
                 
@@ -196,15 +196,6 @@ def load_heatmap_data():
                     textprops={"fontsize": 10},
                     wedgeprops=dict(width=0.4),
                     colors=colors
-                )
-                
-                ax.pie(
-                    pie_df["count"],
-                    labels=pie_df["type"],
-                    autopct="%1.1f%%",
-                    radius=0.75,
-                    textprops={"fontsize": 10},
-                    wedgeprops=dict(width=0.4)
                 )
                 
                 ax.set_ylabel("")  # removes default label
