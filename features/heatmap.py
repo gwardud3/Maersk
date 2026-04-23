@@ -242,37 +242,34 @@ def load_heatmap_data():
                 else "N/A"
             )
         
-            st.markdown(f"""
+            st.markdown("""
             <style>
-            .kpi-wrapper {{
-                height: 100%;
+            .kpi-wrapper {
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
-            }}
-            .kpi-card {{
-                background: #f8fafc;
+            }
+            
+            .kpi-card {
+                background: var(--secondary-background-color);  /* adapts */
+                color: var(--text-color);                       /* adapts */
                 border-radius: 12px;
                 padding: 12px;
-            }}
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            
+            .kpi-value {
+                font-size: clamp(16px, 2vh, 28px);
+                font-weight: 600;
+                color: var(--text-color);  /* ensures visibility */
+            }
+            
+            .kpi-label {
+                font-size: 12px;
+                color: var(--text-color);
+                opacity: 0.7;  /* softer label */
+            }
             </style>
-            
-            <div class="kpi-wrapper">
-            <div class="kpi-card">
-                <div class="kpi-value">{int(total_volume):,}</div>
-                <div class="kpi-label">Total Volume</div>
-            </div>
-            
-            <div class="kpi-card">
-                <div class="kpi-value">{avg_weight_display}</div>
-                <div class="kpi-label">Average Weight</div>
-            </div>
-            
-            <div class="kpi-card">
-                <div class="kpi-value">{top_dim}</div>
-                <div class="kpi-label">Top Dimension</div>
-            </div>
-            </div>
             """, unsafe_allow_html=True)
                     
         # -------------------------------
