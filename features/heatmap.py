@@ -182,9 +182,9 @@ def load_heatmap_data():
                 fig, ax = plt.subplots(figsize=(6, 3))
 
                 color_map = {
-                    "DAS": "#949494", 
+                    "DAS": "#42B0D5", 
                     "EDAS": "#0E4F6A",
-                    "None": "#42B0D5"
+                    "None": "#949494"
                 }
                 
                 colors = [color_map.get(t, "#9E9E9E") for t in pie_df["type"]]
