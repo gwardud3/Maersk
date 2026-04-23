@@ -163,7 +163,7 @@ def load_heatmap_data():
         # 📊 KPI GRID (2x2)
         # ================================
         
-        row1_col1, row1_col2 = st.columns([1, 1.5])
+        row1_col1, row1_col2 = st.columns([2, 1])
         row2_col1, row2_col2 = st.columns(2)
                         
         
