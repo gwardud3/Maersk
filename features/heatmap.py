@@ -182,7 +182,7 @@ def load_heatmap_data():
                 fig, ax = plt.subplots(figsize=(6, 3))
 
                 color_map = {
-                    "DAS": "#EAF7FD", 
+                    "DAS": "#7CC7E8", 
                     "EDAS": "#0E4F6A",
                     "None": "#42B0D5"
                 }
