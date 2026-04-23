@@ -178,7 +178,7 @@ def load_heatmap_data():
                 pie_df = das_counts.reset_index()
                 pie_df.columns = ["type", "count"]
 
-                fig, ax = plt.subplots(figsize=(3, 3))
+                fig, ax = plt.subplots(figsize=(4, 4))
 
                 color_map = {
                     "DAS": "#EAF7FD", 
@@ -188,17 +188,21 @@ def load_heatmap_data():
                 
                 colors = [color_map.get(t, "#9E9E9E") for t in pie_df["type"]]
                 
-                ax.pie(
+                wedges, texts, autotexts = ax.pie(
                     pie_df["count"],
                     labels=pie_df["type"],
                     autopct="%1.1f%%",
-                    pctdistance=0.7,   
-                    labeldistance=1.1,   
+                    pctdistance=0.7,
+                    labeldistance=1.1,
                     radius=0.75,
-                    textprops={"fontsize": 10},
+                    textprops={"fontsize": 11, "weight": "bold"},
                     wedgeprops=dict(width=0.4),
                     colors=colors
                 )
+                
+                for autotext in autotexts:
+                    autotext.set_color("Gray")
+
                 
                 ax.set_ylabel("")  # removes default label
                 
