@@ -272,20 +272,20 @@ def load_heatmap_data():
 
             st.markdown(f"""
             <div class="kpi-wrapper">
-                <div class="kpi-card">
-                    <div class="kpi-value">{int(total_volume):,}</div>
-                    <div class="kpi-label">Total Volume</div>
-                </div>
+            <div class="kpi-card">
+            <div class="kpi-value">{int(total_volume):,}</div>
+            <div class="kpi-label">Total Volume</div>
+            </div>
             
-                <div class="kpi-card">
-                    <div class="kpi-value">{avg_weight_display}</div>
-                    <div class="kpi-label">Average Weight</div>
-                </div>
+            <div class="kpi-card">
+            <div class="kpi-value">{avg_weight_display}</div>
+            <div class="kpi-label">Average Weight</div>
+            </div>
             
-                <div class="kpi-card">
-                    <div class="kpi-value">{top_dim}</div>
-                    <div class="kpi-label">Top Dimension</div>
-                </div>
+            <div class="kpi-card">
+            <div class="kpi-value">{top_dim}</div>
+            <div class="kpi-label">Top Dimension</div>
+            </div>
             </div>
             """, unsafe_allow_html=True)
                     
