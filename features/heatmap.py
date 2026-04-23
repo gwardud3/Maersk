@@ -149,7 +149,7 @@ def load_heatmap_data():
             elif z in das_zips:
                 return "DAS"
             else:
-                return "Neither"
+                return " "
         
         data["das_type"] = data["destzip"].apply(classify_zip)
         
@@ -178,8 +178,25 @@ def load_heatmap_data():
                 pie_df = das_counts.reset_index()
                 pie_df.columns = ["type", "count"]
 
-                
                 fig, ax = plt.subplots(figsize=(3, 3))
+
+                color_map = {
+                    "DAS": "#D6F1FA",
+                    "EDAS": "0E4F6A",
+                    " ": "#42B0D5"
+                }
+                
+                colors = [color_map.get(t, "#9E9E9E") for t in pie_df["type"]]
+                
+                ax.pie(
+                    pie_df["count"],
+                    labels=pie_df["type"],
+                    autopct="%1.1f%%",
+                    radius=0.75,
+                    textprops={"fontsize": 10},
+                    wedgeprops=dict(width=0.4),
+                    colors=colors
+                )
                 
                 ax.pie(
                     pie_df["count"],
