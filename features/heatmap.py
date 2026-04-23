@@ -163,7 +163,7 @@ def load_heatmap_data():
         # 📊 KPI GRID (2x2)
         # ================================
         
-        row1_col1, row1_col2 = st.columns([2, 1])
+        row1_col1, row1_col2, row1_col3 = st.columns([2, 1, 1])
         row2_col1, row2_col2 = st.columns(2)
                         
         
@@ -232,7 +232,7 @@ def load_heatmap_data():
             else:
                 st.write("No ZIP classification available")
 
-        with row1_col2:
+        with row1_col3:
             st.subheader("Key Details")
         
             avg_weight_display = (
