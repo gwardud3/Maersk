@@ -243,53 +243,36 @@ def load_heatmap_data():
             )
         
             st.markdown(f"""
-                <style>
-                .kpi-wrapper {{
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: space-between;
-                    gap: 10px;
-                }}
-                
-                .kpi-card {{
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    background: #f8fafc;
-                    border-radius: 12px;
-                    padding: 12px;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-                }}
-                
-                .kpi-value {{
-                    font-size: clamp(16px, 2vh, 28px);
-                    font-weight: 600;
-                }}
-                
-                .kpi-label {{
-                    font-size: 12px;
-                    color: #6b7280;
-                }}
-                </style>
+            <style>
+            .kpi-wrapper {{
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }}
+            .kpi-card {{
+                background: #f8fafc;
+                border-radius: 12px;
+                padding: 12px;
+            }}
+            </style>
             
-                <div class="kpi-wrapper">
-                    <div class="kpi-card">
-                        <div class="kpi-value">{int(total_volume):,}</div>
-                        <div class="kpi-label">Total Volume</div>
-                    </div>
+            <div class="kpi-wrapper">
+            <div class="kpi-card">
+                <div class="kpi-value">{int(total_volume):,}</div>
+                <div class="kpi-label">Total Volume</div>
+            </div>
             
-                    <div class="kpi-card">
-                        <div class="kpi-value">{avg_weight_display}</div>
-                        <div class="kpi-label">Average Weight</div>
-                    </div>
+            <div class="kpi-card">
+                <div class="kpi-value">{avg_weight_display}</div>
+                <div class="kpi-label">Average Weight</div>
+            </div>
             
-                    <div class="kpi-card">
-                        <div class="kpi-value">{top_dim}</div>
-                        <div class="kpi-label">Top Dimension</div>
-                    </div>
-                </div>
+            <div class="kpi-card">
+                <div class="kpi-value">{top_dim}</div>
+                <div class="kpi-label">Top Dimension</div>
+            </div>
+            </div>
             """, unsafe_allow_html=True)
                     
         # -------------------------------
