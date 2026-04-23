@@ -259,12 +259,12 @@ def load_heatmap_data():
             }
             
             .kpi-value {
-                font-size: 24px;
+                font-size: 48px;
                 font-weight: 600;
             }
             
             .kpi-label {
-                font-size: 14px;
+                font-size: 18px;
                 opacity: 0.7;
             }
             </style>
