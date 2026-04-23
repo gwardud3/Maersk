@@ -248,12 +248,12 @@ def load_heatmap_data():
                     height: 100%;
                     display: flex;
                     flex-direction: column;
-                    justify-content: space-between;  /* evenly spread cards */
+                    justify-content: space-between;
                     gap: 10px;
                 }}
                 
                 .kpi-card {{
-                    flex: 1;  /* each card grows evenly */
+                    flex: 1;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
@@ -264,7 +264,7 @@ def load_heatmap_data():
                 }}
                 
                 .kpi-value {{
-                    font-size: clamp(16px, 2vh, 28px);  /* 🔥 height-based scaling */
+                    font-size: clamp(16px, 2vh, 28px);
                     font-weight: 600;
                 }}
                 
@@ -272,27 +272,25 @@ def load_heatmap_data():
                     font-size: 12px;
                     color: #6b7280;
                 }}
-                
+                </style>
+            
                 <div class="kpi-wrapper">
-                
                     <div class="kpi-card">
                         <div class="kpi-value">{int(total_volume):,}</div>
                         <div class="kpi-label">Total Volume</div>
                     </div>
-                
+            
                     <div class="kpi-card">
                         <div class="kpi-value">{avg_weight_display}</div>
                         <div class="kpi-label">Average Weight</div>
                     </div>
-                
+            
                     <div class="kpi-card">
                         <div class="kpi-value">{top_dim}</div>
                         <div class="kpi-label">Top Dimension</div>
                     </div>
-                
                 </div>
-                </style>
-                """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
                     
         # -------------------------------
         # ⚖️ Weight Distribution
