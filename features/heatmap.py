@@ -242,26 +242,50 @@ def load_heatmap_data():
                 else "N/A"
             )
         
-            st.markdown(f"""
-            <div style="padding:10px 0;">
-                <div style="font-size:clamp(18px, 3vw, 32px); font-weight:600;">
-                    {int(total_volume):,}
-                </div>
-                <div style="color:gray;">Total Volume</div>
-            </div>
+        st.markdown(f"""
+            <style>
+            .kpi-container {{
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }}
             
-            <div style="padding:10px 0;">
-                <div style="font-size:clamp(16px, 2.2vw, 24px); font-weight:500;">
-                    {avg_weight_display}
-                </div>
-                <div style="color:gray;">Average Weight</div>
-            </div>
+            .kpi-card {{
+                background: #f8fafc;
+                border-radius: 12px;
+                padding: 14px 16px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }}
             
-            <div style="padding:10px 0;">
-                <div style="font-size:clamp(16px, 2.2vw, 24px); font-weight:500;">
-                    {top_dim}
+            .kpi-value {{
+                font-size: clamp(18px, 2.8vw, 30px);
+                font-weight: 600;
+                margin-bottom: 2px;
+            }}
+            
+            .kpi-label {{
+                font-size: 13px;
+                color: #6b7280;
+            }}
+            </style>
+            
+            <div class="kpi-container">
+            
+                <div class="kpi-card">
+                    <div class="kpi-value">{int(total_volume):,}</div>
+                    <div class="kpi-label">Total Volume</div>
                 </div>
-                <div style="color:gray;">Top Dimension</div>
+            
+                <div class="kpi-card">
+                    <div class="kpi-value">{avg_weight_display}</div>
+                    <div class="kpi-label">Average Weight</div>
+                </div>
+            
+                <div class="kpi-card">
+                    <div class="kpi-value">{top_dim}</div>
+                    <div class="kpi-label">Top Dimension</div>
+                </div>
+            
             </div>
             """, unsafe_allow_html=True)
                     
