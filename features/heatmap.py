@@ -403,7 +403,7 @@ def load_heatmap_data():
                     dim_df = dim_df.sort_values("dimension")
                     fig, ax = plt.subplots(figsize=(5, 3))
 
-                    ax.bar(weight_df["bucket"], weight_df["count"], color="#42B0D5")
+                    ax.bar(dim_df["dimension"], weight_df["count"], color="#42B0D5")
                     
                     ax.set_xlabel("")
                     ax.set_ylabel("")
