@@ -254,17 +254,17 @@ def load_heatmap_data():
             .kpi-card {
                 background: var(--secondary-background-color);
                 color: var(--text-color);
-                border-radius: 12px;
-                padding: 12px;
+                border-radius: 10px;
+                padding: 8px;
             }
             
             .kpi-value {
-                font-size: 22px;
+                font-size: 24px;
                 font-weight: 600;
             }
             
             .kpi-label {
-                font-size: 12px;
+                font-size: 14px;
                 opacity: 0.7;
             }
             </style>
@@ -280,11 +280,6 @@ def load_heatmap_data():
             <div class="kpi-card">
             <div class="kpi-value">{avg_weight_display}</div>
             <div class="kpi-label">Average Weight</div>
-            </div>
-            
-            <div class="kpi-card">
-            <div class="kpi-value">{top_dim}</div>
-            <div class="kpi-label">Top Dimension</div>
             </div>
             </div>
             """, unsafe_allow_html=True)
