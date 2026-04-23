@@ -401,7 +401,7 @@ def load_heatmap_data():
                     )
                     
                     dim_df = dim_df.sort_values("dimension")
-                    fig, ax = plt.subplots(figsize=(5, 3))
+                    fig, ax = plt.subplots(figsize=(6, 3))
 
                     ax.bar(dim_df["dimension"], dim_df["count"], color="#42B0D5")
                     
