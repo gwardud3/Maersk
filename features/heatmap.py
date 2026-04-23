@@ -6,7 +6,7 @@ import pandas as pd
 import folium as fm
 import numpy as np
 import matplotlib.pyplot as plt
-
+import matplotlib.colors as mcolors
 
 # ================================
 # 📂 LOAD GEOSPATIAL FILES (CACHED)
@@ -188,24 +188,46 @@ def load_heatmap_data():
                 
                 colors = [color_map.get(t, "#9E9E9E") for t in pie_df["type"]]
                 
-                wedges, texts, autotexts = ax.pie(
+                # Create pie WITHOUT labels (we'll use legend instead)
+                wedges, _, autotexts = ax.pie(
                     pie_df["count"],
-                    labels=pie_df["type"],
+                    labels=None,
                     autopct="%1.1f%%",
                     pctdistance=0.7,
-                    labeldistance=1.1,
                     radius=0.75,
                     textprops={"fontsize": 11, "weight": "bold"},
                     wedgeprops=dict(width=0.4),
                     colors=colors
                 )
                 
-                for autotext in autotexts:
-                    autotext.set_color("White")
-
+                # 🔥 Dynamic text color based on brightness
+                def is_light(color):
+                    r, g, b = mcolors.to_rgb(color)
+                    # perceived brightness formula
+                    brightness = 0.299*r + 0.587*g + 0.114*b
+                    return brightness > 0.6
                 
-                ax.set_ylabel("")  # removes default label
+                for i, autotext in enumerate(autotexts):
+                    if is_light(colors[i]):
+                        autotext.set_color("black")
+                    else:
+                        autotext.set_color("white")
                 
+                # ✅ Add legend
+                ax.legend(
+                    wedges,
+                    pie_df["type"],
+                    title="Type",
+                    loc="center left",
+                    bbox_to_anchor=(1, 0.5),
+                    frameon=False,          # 🔥 removes the box
+                    fontsize=10,
+                    title_fontsize=11
+                )
+                
+                ax.set_ylabel("")
+                plt.tight_layout()
+                fig.subplots_adjust(right=0.8)
                 st.pyplot(fig)
             else:
                 st.write("No ZIP classification available")
