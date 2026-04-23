@@ -7,6 +7,7 @@ import folium as fm
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from textwrap import dedent
 
 # ================================
 # 📂 LOAD GEOSPATIAL FILES (CACHED)
@@ -242,7 +243,7 @@ def load_heatmap_data():
                 else "N/A"
             )
         
-            st.markdown(f"""
+            st.markdown(dedent(f"""
             <style>
             .kpi-wrapper {{
                 display: flex;
@@ -270,7 +271,6 @@ def load_heatmap_data():
             </style>
             
             <div class="kpi-wrapper">
-            
                 <div class="kpi-card">
                     <div class="kpi-value">{int(total_volume):,}</div>
                     <div class="kpi-label">Total Volume</div>
@@ -285,9 +285,8 @@ def load_heatmap_data():
                     <div class="kpi-value">{top_dim}</div>
                     <div class="kpi-label">Top Dimension</div>
                 </div>
-            
             </div>
-            """, unsafe_allow_html=True)
+            """), unsafe_allow_html=True)
                     
         # -------------------------------
         # ⚖️ Weight Distribution
@@ -326,7 +325,7 @@ def load_heatmap_data():
                 weight_df = weight_df.sort_values("bucket")
                 fig, ax = plt.subplots(figsize=(5, 3))
 
-                ax.bar(weight_df["bucket"], weight_df["count"])
+                ax.bar(weight_df["bucket"], weight_df["count"], color="#42B0D5")
                 
                 ax.set_xlabel("")
                 ax.set_ylabel("")
@@ -403,7 +402,7 @@ def load_heatmap_data():
                     dim_df = dim_df.sort_values("dimension")
                     fig, ax = plt.subplots(figsize=(5, 3))
 
-                    ax.bar(weight_df["bucket"], weight_df["count"])
+                    ax.bar(weight_df["bucket"], weight_df["count"], color="#42B0D5")
                     
                     ax.set_xlabel("")
                     ax.set_ylabel("")
