@@ -228,7 +228,7 @@ def load_heatmap_data():
                 ax.set_ylabel("")
                 plt.tight_layout()
                 fig.subplots_adjust(right=0.8)
-                st.pyplot(fig)
+                st.pyplot(fig, use_container_width=False)
             else:
                 st.write("No ZIP classification available")
 
@@ -244,32 +244,37 @@ def load_heatmap_data():
         
         st.markdown(f"""
             <style>
-            .kpi-container {{
+            .kpi-wrapper {{
+                height: 100%;
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
+                justify-content: space-between;  /* evenly spread cards */
+                gap: 10px;
             }}
             
             .kpi-card {{
+                flex: 1;  /* each card grows evenly */
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
                 background: #f8fafc;
                 border-radius: 12px;
-                padding: 14px 16px;
+                padding: 12px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             }}
             
             .kpi-value {{
-                font-size: clamp(18px, 2.8vw, 30px);
+                font-size: clamp(16px, 2vh, 28px);  /* 🔥 height-based scaling */
                 font-weight: 600;
-                margin-bottom: 2px;
             }}
             
             .kpi-label {{
-                font-size: 13px;
+                font-size: 12px;
                 color: #6b7280;
             }}
             </style>
             
-            <div class="kpi-container">
+            <div class="kpi-wrapper">
             
                 <div class="kpi-card">
                     <div class="kpi-value">{int(total_volume):,}</div>
@@ -324,7 +329,9 @@ def load_heatmap_data():
                 )
                 
                 weight_df = weight_df.sort_values("bucket")
-                
+                fig.canvas.toolbar_visible = False
+                fig.canvas.header_visible = False
+                fig.canvas.footer_visible = False
                 st.bar_chart(weight_df.set_index("bucket"))
     
             else:
@@ -388,7 +395,9 @@ def load_heatmap_data():
                     )
                     
                     dim_df = dim_df.sort_values("dimension")
-                    
+                    fig.canvas.toolbar_visible = False
+                    fig.canvas.header_visible = False
+                    fig.canvas.footer_visible = False
                     st.bar_chart(dim_df.set_index("dimension"))
         
                     
