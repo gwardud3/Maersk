@@ -233,6 +233,7 @@ def load_heatmap_data():
                 st.write("No ZIP classification available")
 
         with row1_col3:
+            st.subheader(" ")
             st.subheader("Key Details")
         
             avg_weight_display = (
