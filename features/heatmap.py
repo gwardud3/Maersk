@@ -272,7 +272,6 @@ def load_heatmap_data():
                     font-size: 12px;
                     color: #6b7280;
                 }}
-                </style>
                 
                 <div class="kpi-wrapper">
                 
@@ -292,6 +291,7 @@ def load_heatmap_data():
                     </div>
                 
                 </div>
+                </style>
                 """, unsafe_allow_html=True)
                     
         # -------------------------------
@@ -329,10 +329,21 @@ def load_heatmap_data():
                 )
                 
                 weight_df = weight_df.sort_values("bucket")
-                fig.canvas.toolbar_visible = False
-                fig.canvas.header_visible = False
-                fig.canvas.footer_visible = False
-                st.bar_chart(weight_df.set_index("bucket"))
+                fig, ax = plt.subplots(figsize=(5, 3))
+
+                ax.bar(weight_df["bucket"], weight_df["count"])
+                
+                ax.set_xlabel("")
+                ax.set_ylabel("")
+                ax.set_title("")
+                
+                # Clean look
+                ax.spines["top"].set_visible(False)
+                ax.spines["right"].set_visible(False)
+                
+                plt.xticks(rotation=0)
+                
+                st.pyplot(fig, use_container_width=False)
     
             else:
                 st.write("N/A")
@@ -395,10 +406,21 @@ def load_heatmap_data():
                     )
                     
                     dim_df = dim_df.sort_values("dimension")
-                    fig.canvas.toolbar_visible = False
-                    fig.canvas.header_visible = False
-                    fig.canvas.footer_visible = False
-                    st.bar_chart(dim_df.set_index("dimension"))
+                    fig, ax = plt.subplots(figsize=(5, 3))
+
+                    ax.bar(weight_df["bucket"], weight_df["count"])
+                    
+                    ax.set_xlabel("")
+                    ax.set_ylabel("")
+                    ax.set_title("")
+                    
+                    # Clean look
+                    ax.spines["top"].set_visible(False)
+                    ax.spines["right"].set_visible(False)
+                    
+                    plt.xticks(rotation=0)
+                    
+                    st.pyplot(fig, use_container_width=False)
         
                     
                 else:
