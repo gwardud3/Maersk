@@ -181,7 +181,7 @@ def load_heatmap_data():
                 fig, ax = plt.subplots(figsize=(3, 3))
 
                 color_map = {
-                    "DAS": "#D6F1FA",
+                    "DAS": "#EAF7FD", 
                     "EDAS": "#0E4F6A",
                     " ": "#42B0D5"
                 }
@@ -192,6 +192,8 @@ def load_heatmap_data():
                     pie_df["count"],
                     labels=pie_df["type"],
                     autopct="%1.1f%%",
+                    pctdistance=0.7,   
+                    labeldistance=1.1,   
                     radius=0.75,
                     textprops={"fontsize": 10},
                     wedgeprops=dict(width=0.4),
