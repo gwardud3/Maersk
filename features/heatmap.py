@@ -243,33 +243,34 @@ def load_heatmap_data():
                 else "N/A"
             )
         
-            st.markdown(dedent(f"""
+            st.markdown("""
             <style>
-            .kpi-wrapper {{
+            .kpi-wrapper {
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
-            }}
+            }
             
-            .kpi-card {{
+            .kpi-card {
                 background: var(--secondary-background-color);
                 color: var(--text-color);
                 border-radius: 12px;
                 padding: 12px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }}
+            }
             
-            .kpi-value {{
-                font-size: clamp(16px, 2vh, 28px);
+            .kpi-value {
+                font-size: 22px;
                 font-weight: 600;
-            }}
+            }
             
-            .kpi-label {{
+            .kpi-label {
                 font-size: 12px;
                 opacity: 0.7;
-            }}
+            }
             </style>
-            
+            """, unsafe_allow_html=True)
+
+            st.markdown(f"""
             <div class="kpi-wrapper">
                 <div class="kpi-card">
                     <div class="kpi-value">{int(total_volume):,}</div>
@@ -286,7 +287,7 @@ def load_heatmap_data():
                     <div class="kpi-label">Top Dimension</div>
                 </div>
             </div>
-            """), unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
                     
         # -------------------------------
         # ⚖️ Weight Distribution
