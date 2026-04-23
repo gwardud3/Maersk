@@ -149,7 +149,7 @@ def load_heatmap_data():
             elif z in das_zips:
                 return "DAS"
             else:
-                return " "
+                return "None"
         
         data["das_type"] = data["destzip"].apply(classify_zip)
         
@@ -183,7 +183,7 @@ def load_heatmap_data():
                 color_map = {
                     "DAS": "#EAF7FD", 
                     "EDAS": "#0E4F6A",
-                    " ": "#42B0D5"
+                    "None": "#42B0D5"
                 }
                 
                 colors = [color_map.get(t, "#9E9E9E") for t in pie_df["type"]]
@@ -235,30 +235,30 @@ def load_heatmap_data():
         with row1_col3:
             st.subheader(" ")
             st.subheader("Key Details")
-        
+            
             avg_weight_display = (
                 f"{weights.mean():,.2f} lbs"
                 if weights is not None and not weights.empty
                 else "N/A"
             )
-
+        
             st.markdown(f"""
             <div style="padding:10px 0;">
-                <div style="font-size:28px; font-weight:600;">
+                <div style="font-size:clamp(18px, 3vw, 32px); font-weight:600;">
                     {int(total_volume):,}
                 </div>
                 <div style="color:gray;">Total Volume</div>
             </div>
             
             <div style="padding:10px 0;">
-                <div style="font-size:22px; font-weight:500;">
+                <div style="font-size:clamp(16px, 2.2vw, 24px); font-weight:500;">
                     {avg_weight_display}
                 </div>
                 <div style="color:gray;">Average Weight</div>
             </div>
             
             <div style="padding:10px 0;">
-                <div style="font-size:22px; font-weight:500;">
+                <div style="font-size:clamp(16px, 2.2vw, 24px); font-weight:500;">
                     {top_dim}
                 </div>
                 <div style="color:gray;">Top Dimension</div>
