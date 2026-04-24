@@ -486,33 +486,6 @@ def heatmap_app():
     if data is None:
         return
 
-    # ================================
-    # OPTIONAL ORIGIN FILTER
-    # ================================
-    if "originzip" in data.columns:
-
-        origins = ["All Origins"] + sorted(data["originzip"].dropna().unique())
-
-        with st.form("origin_filter_form"):
-            selected_origin = st.selectbox("Filter by Origin", origins)
-            apply_filter = st.form_submit_button("Apply Filter")
-
-        # Only update after submit
-        if "selected_origin" not in st.session_state:
-            st.session_state["selected_origin"] = "All Origins"
-
-        if apply_filter:
-            st.session_state["selected_origin"] = selected_origin
-
-        selected_origin = st.session_state["selected_origin"]
-
-        if selected_origin == "All Origins":
-            filtered_data = data
-        else:
-            filtered_data = data[data["originzip"] == selected_origin]
-
-    else:
-        filtered_data = data
 
     # ================================
     # HEATMAP BUTTON
@@ -530,7 +503,7 @@ def heatmap_app():
 
             # Aggregate to ZIP3
             agg = (
-                filtered_data.groupby("dest3", as_index=False)["volume"]
+                data.groupby("dest3", as_index=False)["volume"]
                 .sum()
             )
 
