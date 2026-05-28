@@ -26,7 +26,13 @@ def load_user_data():
         
         data["Volume"] = pd.to_numeric(data["Volume"], errors="coerce").fillna(1)
 
-        data["DestZip"] = data["DestZip"].astype(str).str.zfill(5)
+        # Keep only the 5-digit ZIP portion before any hyphen
+        data["DestZip"] = data["DestZip"].astype(str).str.split("-").str[0]
+
+        # Pad to standard 5-digit ZIP format
+        data["DestZip"] = data["DestZip"].str.zfill(5)
+
+        # Create 3-digit ZIP prefix
         data["Dest3"] = data["DestZip"].str[:3]
 
         st.success("File uploaded successfully ✅")
@@ -139,8 +145,14 @@ def evaluate_combinations(data, selected_locations, num_nodes):
         combo_name = [c.replace(" Zone", "") for c in combo]
         subset = data[list(combo)]
 
+        # Remove rows where all candidate zones are missing
+        valid_rows = subset.notna().any(axis=1)
+
+        subset = subset[valid_rows]
+        volume_data = data.loc[valid_rows, "Volume"]
+
         best_zone = subset.min(axis=1)
-        weighted_avg = (best_zone * data["Volume"]).sum() / data["Volume"].sum()
+        weighted_avg = (best_zone * volume_data).sum() / volume_data.sum()
 
         # Volume split
         winner = subset.idxmin(axis=1)
@@ -148,7 +160,7 @@ def evaluate_combinations(data, selected_locations, num_nodes):
         volume_split = {}
 
         for col in combo:
-            vol = data.loc[winner == col, "Volume"].sum()
+            vol = volume_data.loc[winner == col].sum()
             volume_split[col.replace(" Zone", "")] = round(vol / total_vol * 100, 2)
 
         results.append({
