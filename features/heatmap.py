@@ -90,7 +90,17 @@ def load_heatmap_data():
 
         data["volume"] = pd.to_numeric(data["volume"], errors="coerce").fillna(1)
 
-        data["destzip"] = data["destzip"].astype(str).str.zfill(5)
+        # Normalize destination ZIPs
+        data["destzip"] = (
+            data["destzip"]
+            .astype(str)
+            .str.strip()
+            .str.split("-").str[0]      # remove ZIP+4
+            .str.extract(r"(\d+)", expand=False)  # keep digits only
+            .str.zfill(5)
+        )
+
+        # Create ZIP3
         data["dest3"] = data["destzip"].str[:3]
 
         st.subheader("📊 Data Summary")
@@ -100,8 +110,14 @@ def load_heatmap_data():
         # ================================
         
         # Ensure proper formatting
-        if "originzip" in data.columns:
-            data["originzip"] = data["originzip"].astype(str).str.zfill(5)
+        data["originzip"] = (
+            data["originzip"]
+            .astype(str)
+            .str.strip()
+            .str.split("-").str[0]
+            .str.extract(r"(\d+)", expand=False)
+            .str.zfill(5)
+        )
 
 
         # ================================
